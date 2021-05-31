@@ -6,7 +6,7 @@ const Factory = artifacts.require("UBIBeneficiaryFactory");
 const ERC20 = artifacts.require("ERC20PresetMinterPauser");
 const Demurrage = artifacts.require("Demurrage");
 const config = require("./config.json");
-const Web3 = require("web3");
+const utils = require("web3-utils");
 
 module.exports = (deployer, network, accounts) => {
 	
@@ -64,12 +64,12 @@ module.exports = (deployer, network, accounts) => {
 
 		// If we are local, mint some fake cUSD to play with for the controller
 		if(network === "local"){
-			await cUSDFake.mint(controller.address, Web3.utils.toWei("10000000", "ether"));
+			await cUSDFake.mint(controller.address, utils.toWei("10000000", "ether"));
 		}
 
 		// Make controller minter/admin of cUBIAuth
-		await cUBIAuthToken.grantRole(Web3.utils.keccak256("DEFAULT_ADMIN_ROLE"), controller.address);
-		await cUBIAuthToken.grantRole(Web3.utils.keccak256("MINTER_ROLE"), controller.address);
+		await cUBIAuthToken.grantRole(utils.keccak256("DEFAULT_ADMIN_ROLE"), controller.address);
+		await cUBIAuthToken.grantRole(utils.keccak256("MINTER_ROLE"), controller.address);
 
 		// Give ownership of controller to the operational account
 		await controller.transferOwnership(configToUse.initialOwner);
