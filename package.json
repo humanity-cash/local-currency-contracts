@@ -1,18 +1,19 @@
 {
-  "name": "celo-ubi-contract",
-  "version": "2.0.0",
-  "description": "Smart contract specification for Celo UBI",
+  "name": "berkshares-contracts",
+  "version": "1.0.0",
+  "description": "Smart contract specification for Berkshares",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/aaronmboyd/celo-ubi-contracts.git"
+    "url": "git+https://github.com/humanity-cash/berkshares-contracts.git"
   },
   "bugs": {
-    "url": "https://github.com/aaronmboyd/celo-ubi-contracts.git"
+    "url": "https://github.com/humanity-cash/berkshares-contracts/issues"
   },
   "author": "Aaron Boyd - Keyko GmbH",
   "contributors": [
-    "Aaron Boyd - Keyko GmbH"
+    "Aaron Boyd - Keyko GmbH",
+    "Sebastian Gerske - Keyko GmbH"
   ],
   "scripts": {
     "ipfs": "node --no-warnings ./scripts/ipfs.js",
