@@ -21,36 +21,42 @@ module.exports = {
 		},
 
 		local: {
-			provider: () => new HDWalletProvider({
-				mnemonic: getMnemonic("local"),
-				providerOrUrl: `http://localhost:7545`,
-			}),
+			provider: () =>
+				new HDWalletProvider({
+					mnemonic: getMnemonic("local"),
+					providerOrUrl: `http://localhost:7545`,
+				}),
 			network_id: "*",
-			gas: 13000000,
+			gas: 9500000,
 			gasPrice: 20000000000,
+			timeoutBlocks: 50,
+			skipDryRun: true,
 		},
 
 		alfajores: {
-			provider: () => new HDWalletProvider({
-				mnemonic: getMnemonic("alfajores"),
-				providerOrUrl: `https://alfajores-forno.celo-testnet.org`,
-			}),
+			provider: () =>
+				new HDWalletProvider({
+					mnemonic: getMnemonic("alfajores"),
+					providerOrUrl: `https://alfajores-forno.celo-testnet.org`,
+				}),
 			network_id: 44787, // Alfajores network id
 		},
 
 		baklava: {
-			provider: () => new HDWalletProvider({
-				mnemonic: getMnemonic("baklava"),
-				providerOrUrl: `https://baklava-forno.celo-testnet.org`,
-			}),
+			provider: () =>
+				new HDWalletProvider({
+					mnemonic: getMnemonic("baklava"),
+					providerOrUrl: `https://baklava-forno.celo-testnet.org`,
+				}),
 			network_id: 62320, // Baklava network id
 		},
 
 		mainnet: {
-			provider: () => new HDWalletProvider({
-				mnemonic: getMnemonic("mainnet"),
-				providerOrUrl: `https://forno.celo.org`,
-			}),
+			provider: () =>
+				new HDWalletProvider({
+					mnemonic: getMnemonic("mainnet"),
+					providerOrUrl: `https://forno.celo.org`,
+				}),
 			network_id: 42220, // Mainnet network id
 		},
 	},
