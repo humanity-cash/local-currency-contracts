@@ -21,7 +21,7 @@ module.exports = {
 		},
 
 		local: {
-			provider: new HDWalletProvider({
+			provider: () => new HDWalletProvider({
 				mnemonic: getMnemonic("local"),
 				providerOrUrl: `http://localhost:7545`,
 			}),
@@ -31,7 +31,7 @@ module.exports = {
 		},
 
 		alfajores: {
-			provider: new HDWalletProvider({
+			provider: () => new HDWalletProvider({
 				mnemonic: getMnemonic("alfajores"),
 				providerOrUrl: `https://alfajores-forno.celo-testnet.org`,
 			}),
@@ -39,7 +39,7 @@ module.exports = {
 		},
 
 		baklava: {
-			provider: new HDWalletProvider({
+			provider: () => new HDWalletProvider({
 				mnemonic: getMnemonic("baklava"),
 				providerOrUrl: `https://baklava-forno.celo-testnet.org`,
 			}),
@@ -47,7 +47,7 @@ module.exports = {
 		},
 
 		mainnet: {
-			provider: new HDWalletProvider({
+			provider: () => new HDWalletProvider({
 				mnemonic: getMnemonic("mainnet"),
 				providerOrUrl: `https://forno.celo.org`,
 			}),
