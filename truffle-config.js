@@ -27,9 +27,9 @@ module.exports = {
 					providerOrUrl: `http://localhost:7545`,
 				}),
 			network_id: "*",
-			gas: 9500000,
+			gas: 6721975,
 			gasPrice: 20000000000,
-			timeoutBlocks: 50,
+			deploymentPollingInterval: 8000,
 			skipDryRun: true,
 		},
 
