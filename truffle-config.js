@@ -27,9 +27,9 @@ module.exports = {
 					providerOrUrl: `http://localhost:7545`,
 				}),
 			network_id: "*",
-			gas: 9500000,
+			gas: 6721975,
 			gasPrice: 20000000000,
-			timeoutBlocks: 50,
+			deploymentPollingInterval: 8000,
 			skipDryRun: true,
 		},
 
@@ -37,18 +37,22 @@ module.exports = {
 			provider: () =>
 				new HDWalletProvider({
 					mnemonic: getMnemonic("alfajores"),
-					providerOrUrl: `https://alfajores-forno.celo-testnet.org`,
+					providerOrUrl: `wss://alfajores-forno.celo-testnet.org/ws`,
 				}),
 			network_id: 44787, // Alfajores network id
+			skipDryRun: true,
+			disableConfirmationListener: true,
 		},
 
 		baklava: {
 			provider: () =>
 				new HDWalletProvider({
 					mnemonic: getMnemonic("baklava"),
-					providerOrUrl: `https://baklava-forno.celo-testnet.org`,
+					providerOrUrl: `wss://baklava-forno.celo-testnet.org/ws`,
 				}),
 			network_id: 62320, // Baklava network id
+			skipDryRun: true,
+			disableConfirmationListener: true,
 		},
 
 		mainnet: {

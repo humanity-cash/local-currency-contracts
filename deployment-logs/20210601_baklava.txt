@@ -1,0 +1,134 @@
+Starting migrations...
+======================
+> Network name:    'baklava'
+> Network id:      62320
+> Block gas limit: 0 (0x0)
+
+
+1_initial_migration.js
+======================
+
+   Deploying 'Migrations'
+   ----------------------
+   > transaction hash:    0x6d9427dd619093da67425fafce2d4af19077e22337300b4e41d84de48e3520ee
+   > Blocks: 1            Seconds: 4
+   > contract address:    0x7b0F9bADeF03691fEF8086966552eE5D5D48A9Be
+   > block number:        5838782
+   > block timestamp:     1622535368
+   > account:             0x4747eAb1698a5c72DC3fD07A3074B2E1795D7294
+   > balance:             2.99160672
+   > gas used:            153118 (0x2561e)
+   > gas price:           20 gwei
+   > value sent:          0 ETH
+   > total cost:          0.00306236 ETH
+
+Migrations address 0x7b0F9bADeF03691fEF8086966552eE5D5D48A9Be
+
+   Deploying 'Demurrage'
+   ---------------------
+   > transaction hash:    0xc23566ee818a43effd7706b4e3789d9f1f9236eed4ab2f24686fd6fcf64c1910
+   > Blocks: 0            Seconds: 0
+   > contract address:    0x9f8E5051E3C5c513e081D3Ce070730236935B016
+   > block number:        5838783
+   > block timestamp:     1622535373
+   > account:             0x4747eAb1698a5c72DC3fD07A3074B2E1795D7294
+   > balance:             2.98376816
+   > gas used:            391928 (0x5faf8)
+   > gas price:           20 gwei
+   > value sent:          0 ETH
+   > total cost:          0.00783856 ETH
+
+
+   Linking
+   -------
+   * Contract: UBIBeneficiary <--> Library: Demurrage (at address: 0x9f8E5051E3C5c513e081D3Ce070730236935B016)
+
+   Linking
+   -------
+   * Contract: UBIReconciliationAccount <--> Library: Demurrage (at address: 0x9f8E5051E3C5c513e081D3Ce070730236935B016)
+
+   Deploying 'UBIBeneficiary'
+   --------------------------
+   > transaction hash:    0x6eeffffa0a415776bea9e20c69759bd144ec149bf0ba0fa27c6bbdcc1f7c769a
+   > Blocks: 0            Seconds: 0
+   > contract address:    0x96676E236580464C82fffa26Fb6B5f5a2E2B0E39
+   > block number:        5838784
+   > block timestamp:     1622535378
+   > account:             0x4747eAb1698a5c72DC3fD07A3074B2E1795D7294
+   > balance:             2.94570504
+   > gas used:            1903156 (0x1d0a34)
+   > gas price:           20 gwei
+   > value sent:          0 ETH
+   > total cost:          0.03806312 ETH
+
+
+   Deploying 'UBIReconciliationAccount'
+   ------------------------------------
+   > transaction hash:    0xd50ceffdaf1f62f99d26f6ea52d9dde0c59699d6885ba92bd3f9a6ca417e48c0
+   > Blocks: 0            Seconds: 0
+   > contract address:    0xE36f4f38981403C817d81a1f97c790cdcE9E85dD
+   > block number:        5838785
+   > block timestamp:     1622535383
+   > account:             0x4747eAb1698a5c72DC3fD07A3074B2E1795D7294
+   > balance:             2.90278704
+   > gas used:            2145900 (0x20be6c)
+   > gas price:           20 gwei
+   > value sent:          0 ETH
+   > total cost:          0.042918 ETH
+
+
+   Deploying 'ERC20PresetMinterPauser'
+   -----------------------------------
+   > transaction hash:    0x53172b8545587ed39ffbb483713dad650f311902b93eff52038d6a372cc21533
+   > Blocks: 0            Seconds: 0
+   > contract address:    0x3B9d7CdF5047785Dd4083AfE7ea16D9C2a636097
+   > block number:        5838786
+   > block timestamp:     1622535388
+   > account:             0x4747eAb1698a5c72DC3fD07A3074B2E1795D7294
+   > balance:             2.86645416
+   > gas used:            1816644 (0x1bb844)
+   > gas price:           20 gwei
+   > value sent:          0 ETH
+   > total cost:          0.03633288 ETH
+
+
+   Deploying 'UBIBeneficiaryFactory'
+   ---------------------------------
+   > transaction hash:    0x11a8eda2f107fcc8531b2f8d549ed289a8a26264f01392d18a034a7160786b5e
+   > Blocks: 0            Seconds: 0
+   > contract address:    0x86306d55DE1aD6FcA9d8CCAE5FADADE48Cf00A53
+   > block number:        5838787
+   > block timestamp:     1622535393
+   > account:             0x4747eAb1698a5c72DC3fD07A3074B2E1795D7294
+   > balance:             2.82851172
+   > gas used:            1897122 (0x1cf2a2)
+   > gas price:           20 gwei
+   > value sent:          0 ETH
+   > total cost:          0.03794244 ETH
+
+
+   Deploying 'UBIController'
+   -------------------------
+   > transaction hash:    0x9c6e1607f5dfd12429feda18e4c455b467285c74e6339cd8d521eb06e8355c54
+   > Blocks: 0            Seconds: 0
+   > contract address:    0x3d29428E0e096d8d338e02e3F625313689A627f6
+   > block number:        5838788
+   > block timestamp:     1622535398
+   > account:             0x4747eAb1698a5c72DC3fD07A3074B2E1795D7294
+   > balance:             2.7755252
+   > gas used:            2649326 (0x286cee)
+   > gas price:           20 gwei
+   > value sent:          0 ETH
+   > total cost:          0.05298652 ETH
+
+
+   > Saving migration to chain.
+   > Saving artifacts
+   -------------------------------------
+   > Total cost:          0.21914388 ETH
+
+
+Summary
+=======
+> Total deployments:   7
+> Final cost:          0.21914388 ETH

@@ -22,3 +22,19 @@ Generate with `yarn doc`
 * [UBIBeneficiaryFactory](docs/UBIBeneficiaryFactory.md)
 * [UBIController](docs/UBIController.md)
 * [UBIReconciliationAccount](docs/UBIReconciliationAccount.md)
+
+
+## Networks
+
+### Alfajores Celo Testnet
+
+| Contract      | Address                                      |
+|---------------|----------------------------------------------|
+| UBIController | `0x307D068DBADbd9CB8BD397917Be42e23FAb4880F` |
+
+
+### Baklava Celo Testnet
+
+| Contract      | Address                                      |
+|---------------|----------------------------------------------|
+| UBIController | `0x3d29428E0e096d8d338e02e3F625313689A627f6` |
