@@ -7,6 +7,9 @@ const getMnemonic = (network) => {
 	return process.env.MNEMONIC;
 };
 
+// celos derivation path!
+const celoDerivationPath = "m/44'/52752'/0'/0/";
+
 module.exports = {
 	networks: {
 		development: {
@@ -25,6 +28,7 @@ module.exports = {
 				new HDWalletProvider({
 					mnemonic: getMnemonic("local"),
 					providerOrUrl: `http://localhost:7545`,
+					derivationPath: celoDerivationPath,
 				}),
 			network_id: "*",
 			gas: 6721975,
@@ -38,6 +42,7 @@ module.exports = {
 				new HDWalletProvider({
 					mnemonic: getMnemonic("alfajores"),
 					providerOrUrl: `wss://alfajores-forno.celo-testnet.org/ws`,
+					derivationPath: celoDerivationPath,
 				}),
 			network_id: 44787, // Alfajores network id
 			skipDryRun: true,
@@ -49,6 +54,7 @@ module.exports = {
 				new HDWalletProvider({
 					mnemonic: getMnemonic("baklava"),
 					providerOrUrl: `wss://baklava-forno.celo-testnet.org/ws`,
+					derivationPath: celoDerivationPath,
 				}),
 			network_id: 62320, // Baklava network id
 			skipDryRun: true,
@@ -60,6 +66,7 @@ module.exports = {
 				new HDWalletProvider({
 					mnemonic: getMnemonic("mainnet"),
 					providerOrUrl: `https://forno.celo.org`,
+					derivationPath: celoDerivationPath,
 				}),
 			network_id: 42220, // Mainnet network id
 		},
