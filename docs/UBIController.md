@@ -155,14 +155,6 @@ Update implementation address for reconciliationAccount
 
 
 
-### `setDemurrageParameters(uint256 _blocksInEpoch, uint256 _demurrageFreeEpochs, uint256 _demurrageNumerator, uint256 _demurrageDenominator)` (external)
-
-Update demurrage parameters. Can only be called by the current owner.
-
-
-
-
-
 ### `pause()` (external)
 
 Triggers stopped state.

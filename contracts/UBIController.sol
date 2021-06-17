@@ -374,36 +374,6 @@ contract UBIController is IVersionedContract, Ownable, Pausable, ReentrancyGuard
     }
 
     /**
-     * @notice Update demurrage parameters. Can only be called by the current owner.
-     *
-     * @param _blocksInEpoch Number of blocks in an epoch for this network
-     * @param _demurrageFreeEpochs Number of epochs which are free of demurrage
-     * @param _demurrageNumerator Numerator for demurrage ratio
-     * @param _demurrageDenominator Denominator for demurrage ratio
-     *
-     */
-    function setDemurrageParameters(
-        uint256 _blocksInEpoch,
-        uint256 _demurrageFreeEpochs,
-        uint256 _demurrageNumerator,
-        uint256 _demurrageDenominator
-    ) external onlyOwner {
-        uint256 i;
-        for (i = 0; i < ubiBeneficiaries.length(); i = i.add(1)) {
-            address ubiBeneficiaryAddress;
-            // .at function returns a tuple of (uint256, address)
-            (, ubiBeneficiaryAddress) = ubiBeneficiaries.at(i);
-            IUBIBeneficiary user = IUBIBeneficiary(ubiBeneficiaryAddress);
-            user.setDemurrageParameters(
-                _blocksInEpoch,
-                _demurrageFreeEpochs,
-                _demurrageNumerator,
-                _demurrageDenominator
-            );
-        }
-    }
-
-    /**
      * @notice Triggers stopped state.
      *
      * @dev Requirements: The contract must not be paused.

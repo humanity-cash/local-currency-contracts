@@ -1,19 +1,17 @@
 const UBIController = artifacts.require("UBIController");
 const Factory = artifacts.require("UBIBeneficiaryFactory");
-const Demurrage = artifacts.require("Demurrage");
 const UBIBeneficiary = artifacts.require("UBIBeneficiary");
 const UBIReconciliationAccount = artifacts.require("UBIReconciliationAccount");
 const truffleAssert = require("truffle-assertions");
 
 contract("Versions", async (accounts) => {
-	let controller, factory, demurrage, beneficiary, reconciler;
+	let controller, factory, beneficiary, reconciler;
 
 	before(async () => {
 		beneficiary = await UBIBeneficiary.deployed();
 		reconciler = await UBIReconciliationAccount.deployed();
 		controller = await UBIController.deployed();
 		factory = await Factory.deployed();
-		demurrage = await Demurrage.deployed();
 	});
 
 	it("Should read version numbers of all deployed contracts", async () => {
@@ -26,11 +24,6 @@ contract("Versions", async (accounts) => {
 			console.log(
 				`Factory version: ${JSON.stringify(
 					await factory.getVersionNumber()
-				)}`
-			),
-			console.log(
-				`Demurrage version: ${JSON.stringify(
-					await demurrage.getVersionNumber()
 				)}`
 			),
 			console.log(

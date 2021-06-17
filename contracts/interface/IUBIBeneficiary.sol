@@ -54,50 +54,18 @@ interface IUBIBeneficiary {
     );
 
     /**
-     * @notice Triggered when a demurrage charge has been paid back to the owner
-     *
-     * @param _userId       Hashed bytes32 of the userId converted to uint256
-     * @param _ubiAddress   Celo address of the UBI Beneficiary
-     * @param _txId         Raw transaction ID for this event
-     * @param _amt          Demurrage amount paid
-     */
-    event DemurragePaidEvent(
-        bytes32 indexed _userId,
-        address indexed _ubiAddress,
-        string _txId,
-        uint256 _amt
-    );
-
-    /**
      * @notice Used to initialize a new UBIBeneficiary contract
      *
      * @param _cUSDToken token used for cUSD
      * @param _cUBIAuthToken token used for cUSD authorizations
      * @param _userId userId for the UBI beneficiary
      *
-     * @dev Demurrage parameters defaulted to Celo: 17280 blocks/epoch, 28 epochs demurrage free, and 1% (1/100) per epoch after
      */
     function initialize(
         address _cUSDToken,
         address _cUBIAuthToken,
         address _controller,
         string memory _userId
-    ) external;
-
-    /**
-     * @notice External entry point function for updating of updating demurrage parameters
-     *
-     * @param _blocksInEpoch Number of blocks in an epoch for this network
-     * @param _demurrageFreeEpochs Number of epochs which are free of demurrage
-     * @param _demurrageNumerator Numerator for demurrage ratio
-     * @param _demurrageDenominator Denominator for demurrage ratio
-     *
-     */
-    function setDemurrageParameters(
-        uint256 _blocksInEpoch,
-        uint256 _demurrageFreeEpochs,
-        uint256 _demurrageNumerator,
-        uint256 _demurrageDenominator
     ) external;
 
     /**
