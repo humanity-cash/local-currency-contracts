@@ -6,10 +6,9 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol";
+import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "./interface/IUBIBeneficiary.sol";
 import "./interface/IVersionedContract.sol";
-import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
-import "./lib/Demurrage.sol";
 
 /**
  * @title Implementation of Celo UBI beneficiary contract
@@ -29,7 +28,6 @@ contract UBIBeneficiary is
     using SafeERC20 for IERC20;
     using SafeERC20 for ERC20PresetMinterPauser;
 
-    Demurrage.Parameters public demurrage;
     IERC20 public cUSDToken;
     ERC20PresetMinterPauser public cUBIAuthToken;
     uint256 public createdBlock;
@@ -98,8 +96,6 @@ contract UBIBeneficiary is
      * @param _cUBIAuthToken token used for cUSD authorizations
      * @param _controller Address of the controller contract
      * @param _userId userId for the UBI beneficiary
-     *
-     * @dev Demurrage parameters defaulted to Celo: 17280 blocks/epoch, 28 epochs demurrage free, and 1% (1/100) per epoch after
      */
     function initialize(
         address _cUSDToken,
@@ -111,36 +107,10 @@ contract UBIBeneficiary is
         cUBIAuthToken = ERC20PresetMinterPauser(_cUBIAuthToken);
         createdBlock = block.number;
         userId = _userId;
-        demurrage = Demurrage.Parameters(17280, 28, uint256(17280).mul(28), 1, 100, 0);
 
         _setupRole(CONTROLLER_ROLE, _controller);
         _setupRole(DEFAULT_ADMIN_ROLE, _controller);
         _setupRole(FACTORY_ROLE, msg.sender);
-    }
-
-    /**
-     * @notice External entry point function for updating of updating demurrage parameters
-     *
-     * @param _blocksInEpoch Number of blocks in an epoch for this network
-     * @param _demurrageFreeEpochs Number of epochs which are free of demurrage
-     * @param _demurrageNumerator Numerator for demurrage ratio
-     * @param _demurrageDenominator Denominator for demurrage ratio
-     *
-     */
-    function setDemurrageParameters(
-        uint256 _blocksInEpoch,
-        uint256 _demurrageFreeEpochs,
-        uint256 _demurrageNumerator,
-        uint256 _demurrageDenominator
-    ) external override onlyFactoryOrController(msg.sender) {
-        demurrage = Demurrage.Parameters(
-            _blocksInEpoch,
-            _demurrageFreeEpochs,
-            _demurrageFreeEpochs.mul(_blocksInEpoch),
-            _demurrageNumerator,
-            _demurrageDenominator,
-            demurrage.lastCalculatedAtBlock
-        );
     }
 
     /**
@@ -197,46 +167,6 @@ contract UBIBeneficiary is
     {
         Settlement memory s = settlements[_key];
         return (s.value, s.txId);
-    }
-
-    /**
-     * @notice Calculate demurrage
-     *
-     * @dev Calculate demurrage as a function of current block, created block of this user, and remaining cUSD balance
-     * @dev This calculation will be performed and charged after each settlement
-     */
-    function _calculateDemurrage() internal view returns (uint256) {
-        uint256 demurrageCharge;
-        uint256 currentBlock = block.number;
-        uint256 commenceChargeAtBlock = createdBlock.add(demurrage.freeBlocks);
-
-        if (currentBlock < commenceChargeAtBlock) {
-            demurrageCharge = 0;
-        } else {
-            uint256 blocksToCharge;
-            if (demurrage.lastCalculatedAtBlock > commenceChargeAtBlock)
-                blocksToCharge = currentBlock.sub(demurrage.lastCalculatedAtBlock);
-            else blocksToCharge = currentBlock.sub(commenceChargeAtBlock);
-
-            // For gas optimisation we are only compounding once per epoch, rather than continously every block.
-            // This division will round towards zero and give us whole number epochs
-            uint256 epochsToCharge = blocksToCharge.div(demurrage.blocksInEpoch);
-
-            // If an full epoch has not passed, then demurrage is zero
-            // Or, this can happen if you settle multiple times in an epoch, you will only be charged on the first settlement
-            if (epochsToCharge == 0) {
-                demurrageCharge = 0;
-            } else {
-                uint256 cUSDBalance = cUSDToken.balanceOf(address(this));
-                demurrageCharge = Demurrage.compoundDemurrage(
-                    cUSDBalance,
-                    demurrage.ratioNumerator,
-                    demurrage.ratioDenominator,
-                    epochsToCharge
-                );
-            }
-        }
-        return demurrageCharge;
     }
 
     /**
@@ -357,19 +287,6 @@ contract UBIBeneficiary is
         newSettle.txId = _txId;
         newSettle.value = _value;
         cUSDToken.transfer(_reconciliationAccount, _value);
-
-        // Perform demurrage calculation and charge
-        uint256 demurrageCharge = _calculateDemurrage();
-        if (demurrageCharge > 0) {
-            cUSDToken.transfer(msg.sender, demurrageCharge);
-            demurrage.lastCalculatedAtBlock = block.number;
-            emit DemurragePaidEvent(
-                keccak256(bytes(userId)),
-                address(this),
-                _txId,
-                demurrageCharge
-            );
-        }
 
         emit SettlementEvent(keccak256(bytes(userId)), address(this), _txId, _value);
     }

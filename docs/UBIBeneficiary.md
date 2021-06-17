@@ -32,14 +32,6 @@ used to initialize a new UBIBeneficiary contract
 
 
 
-Demurrage parameters defaulted to Celo: 17280 blocks/epoch, 28 epochs demurrage free, and 1% (1/100) per epoch after
-
-### `setDemurrageParameters(uint256 _blocksInEpoch, uint256 _demurrageFreeEpochs, uint256 _demurrageNumerator, uint256 _demurrageDenominator)` (external)
-
-External entry point function for updating of updating demurrage parameters
-
-
-
 
 
 ### `getSettlementKeys() → bytes32[]` (external)
@@ -75,15 +67,6 @@ Return the primitive attributes of an Settlement struct
 
 
 
-
-### `_calculateDemurrage() → uint256` (internal)
-
-Calculate demurrage
-
-
-
-Calculate demurrage as a function of current block, created block of this user, and remaining cUSD balance
-This calculation will be performed and charged after each settlement
 
 ### `availableBalance() → uint256` (external)
 
