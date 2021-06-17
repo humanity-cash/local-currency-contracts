@@ -1,4 +1,4 @@
-const UBIController = artifacts.require("UBIController");
+const Controller = artifacts.require("Controller");
 const Factory = artifacts.require("UBIBeneficiaryFactory");
 const UBIBeneficiary = artifacts.require("UBIBeneficiary");
 const UBIReconciliationAccount = artifacts.require("UBIReconciliationAccount");
@@ -29,7 +29,7 @@ contract("Settlement", async (accounts) => {
 			cUBIAuthToken.address
 		);
 
-		controller = await UBIController.new(
+		controller = await Controller.new(
 			cUSDTestToken.address,
 			cUBIAuthToken.address,
 			factory.address,
@@ -84,7 +84,6 @@ contract("Settlement", async (accounts) => {
 	it("Should peform new authorize, deauthorize (implicitly) and settle, and have this summed cUSD balance in reconciliation account", async () => {
 		const amt = Web3.utils.toWei("22.22", "ether");
 		const txId2 = uuid();
-		controller.authorize(userId, txId2, amt);
 		controller.settle(userId, txId2, amt);
 		const reconciliationAccount = await controller.reconciliationAccount();
 		const balance = await cUSDTestToken.balanceOf(reconciliationAccount);

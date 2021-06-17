@@ -20,7 +20,7 @@ import "./interface/IVersionedContract.sol";
  *
  * @author Aaron Boyd <https://github.com/aaronmboyd>
  */
-contract UBIController is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
+contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
     using SafeERC20 for ERC20PresetMinterPauser;
@@ -61,7 +61,7 @@ contract UBIController is IVersionedContract, Ownable, Pausable, ReentrancyGuard
     EnumerableMap.UintToAddressMap private ubiBeneficiaries;
 
     /**
-     * @notice Used to initialize a new UBIController contract
+     * @notice Used to initialize a new Controller contract
      *
      * @param _cUSDToken token used for cUSD
      */
@@ -180,61 +180,6 @@ contract UBIController is IVersionedContract, Ownable, Pausable, ReentrancyGuard
         address ubiBeneficiaryAddress = ubiBeneficiaries.get(uint256(_userId));
         IUBIBeneficiary user = IUBIBeneficiary(ubiBeneficiaryAddress);
         return user.authorizationBalance();
-    }
-
-    /**
-     * @notice Authorizes an amount for a UBI beneficiary
-     *
-     * @param _userId       User identifier
-     * @param _txId         Raw transaction ID for this event
-     * @param _value        Amount to authorize
-     */
-    function authorize(
-        bytes32 _userId,
-        string calldata _txId,
-        uint256 _value
-    )
-        external
-        greaterThanZero(_value)
-        balanceAvailable(_userId, _value)
-        onlyOwner
-        nonReentrant
-        whenNotPaused
-    {
-        address ubiBeneficiaryAddress = ubiBeneficiaries.get(uint256(_userId));
-        cUBIAuthToken.mint(ubiBeneficiaryAddress, _value);
-
-        IUBIBeneficiary user = IUBIBeneficiary(ubiBeneficiaryAddress);
-        user.authorize(_txId, _value);
-    }
-
-    /**
-     * @notice Deauthorizes an amount for a UBI beneficiary
-     *
-     * @param _userId       User identifier
-     * @param _txId         Raw transaction ID for this event
-     */
-    function deauthorize(bytes32 _userId, string calldata _txId)
-        external
-        onlyOwner
-        nonReentrant
-        whenNotPaused
-    {
-        _deauthorize(uint256(_userId), _txId);
-    }
-
-    /**
-     * @notice Deauthorizes an amount for a UBI beneficiary
-     * @dev Implementation of external "deauthorize" function so that it may be called internally without reentrancy guard incrementing
-     *
-     * @param _userId       User identifier
-     * @param _txId         Raw transaction ID for this event
-     */
-    function _deauthorize(uint256 _userId, string calldata _txId) private {
-        address ubiBeneficiaryAddress = ubiBeneficiaries.get(_userId);
-        IUBIBeneficiary user = IUBIBeneficiary(ubiBeneficiaryAddress);
-        uint256 deauthorizedAmt = user.deauthorize(_txId);
-        cUBIAuthToken.burn(deauthorizedAmt);
     }
 
     /**

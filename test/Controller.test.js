@@ -1,4 +1,4 @@
-const UBIController = artifacts.require("UBIController");
+const Controller = artifacts.require("Controller");
 const Factory = artifacts.require("UBIBeneficiaryFactory");
 const ERC20 = artifacts.require("ERC20PresetMinterPauser");
 const UBIBeneficiary = artifacts.require("UBIBeneficiary");
@@ -8,7 +8,7 @@ const config = require("./config.json");
 const truffleAssert = require("truffle-assertions");
 const { uuid } = require("uuidv4");
 
-contract("UBIController", async (accounts) => {
+contract("Controller", async (accounts) => {
 	const owner = accounts[0];
 
 	let controller, factory, cUSDTestToken, cUBIAuthToken;
@@ -30,7 +30,7 @@ contract("UBIController", async (accounts) => {
 			cUBIAuthToken.address
 		);
 
-		controller = await UBIController.new(
+		controller = await Controller.new(
 			cUSDTestToken.address,
 			cUBIAuthToken.address,
 			factory.address,

@@ -1,5 +1,5 @@
 const Migrations = artifacts.require("Migrations");
-const UBIController = artifacts.require("UBIController");
+const Controller = artifacts.require("Controller");
 const UBIBeneficiary = artifacts.require("UBIBeneficiary");
 const UBIReconciliationAccount = artifacts.require("UBIReconciliationAccount");
 const Factory = artifacts.require("UBIBeneficiaryFactory");
@@ -16,12 +16,7 @@ module.exports = (deployer, network, accounts) => {
 	let configToUse = config[`${network}`];
 	if (!configToUse) configToUse = config["development"];
 
-	let factory,
-		controller,
-		ubiLogic,
-		reconciliationLogic,
-		cUBIAuthToken,
-		cUSDFake;
+	let factory, controller, reconciliationLogic, cUBIAuthToken, cUSDFake;
 
 	// Deploy logic/implementation contracts
 	deployer.deploy(UBIBeneficiary).then(async (ubiLogic) => {
@@ -52,7 +47,7 @@ module.exports = (deployer, network, accounts) => {
 
 		// Deploy controller
 		controller = await deployer.deploy(
-			UBIController,
+			Controller,
 			cUSDToUse,
 			cUBIAuthToken.address,
 			factory.address,
