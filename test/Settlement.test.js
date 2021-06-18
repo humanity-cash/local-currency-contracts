@@ -1,13 +1,12 @@
 const Controller = artifacts.require("Controller");
-const Factory = artifacts.require("UBIBeneficiaryFactory");
-const UBIBeneficiary = artifacts.require("UBIBeneficiary");
+const WalletFactory = artifacts.require("WalletFactory");
+const Wallet = artifacts.require("Wallet");
 const UBIReconciliationAccount = artifacts.require("UBIReconciliationAccount");
 const ERC20 = artifacts.require("ERC20PresetMinterPauser");
 const Web3 = require("web3");
 const truffleAssert = require("truffle-assertions");
 const config = require("./config.json");
 const { uuid } = require("uuidv4");
-const TimeTravel = require("./TimeTravel");
 
 contract("Settlement", async (accounts) => {
 	let controller, factory, cUSDTestToken, cUBIAuthToken, userId;
@@ -19,10 +18,10 @@ contract("Settlement", async (accounts) => {
 			"cUBIAUTH"
 		);
 
-		ubiLogic = await UBIBeneficiary.deployed();
+		ubiLogic = await Wallet.deployed();
 		reconcileLogic = await UBIReconciliationAccount.deployed();
 
-		factory = await Factory.new(
+		factory = await WalletFactory.new(
 			ubiLogic.address,
 			reconcileLogic.address,
 			cUSDTestToken.address,
@@ -128,7 +127,7 @@ contract("Settlement", async (accounts) => {
 		await controller.settle(userId, uuid(), amt);
 		const address = await controller.beneficiaryAddress(userId);
 		// console.log("UBI Beneficiary address = " + address);
-		const ubi = new web3.eth.Contract(UBIBeneficiary.abi, address);
+		const ubi = new web3.eth.Contract(Wallet.abi, address);
 		const keys = await ubi.methods.getSettlementKeys().call();
 		// console.log(keys);
 		assert(keys.length == 3);
@@ -137,7 +136,7 @@ contract("Settlement", async (accounts) => {
 	it("Should iterate settlements", async () => {
 		const address = await controller.beneficiaryAddress(userId);
 		// console.log("UBI Beneficiary address = " + address);
-		const ubi = new web3.eth.Contract(UBIBeneficiary.abi, address);
+		const ubi = new web3.eth.Contract(Wallet.abi, address);
 		const keys = await ubi.methods.getSettlementKeys().call();
 
 		let settles = [];

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-interface IUBIBeneficiaryFactory {
+interface IWalletFactory {
     /**
      * @notice Triggered when a new UBIBeneficiary has been created
      *

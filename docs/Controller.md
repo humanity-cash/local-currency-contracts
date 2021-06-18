@@ -1,4 +1,4 @@
-## `UBIController`
+## `Controller`
 
 
 
@@ -27,7 +27,7 @@ Enforces a _userId should not be mapped to an existing user / contract address
 
 ### `constructor(address _cUSDToken, address _cUBIAuthToken, address _factory, address _custodian)` (public)
 
-Used to initialize a new UBIController contract
+Used to initialize a new Controller contract
 
 
 
@@ -67,30 +67,6 @@ Update the custodian address
 ### `balanceOfUBIBeneficiary(bytes32 _userId) → uint256` (public)
 
 Retrieves the available balance of a UBI beneficiary
-
-
-
-
-
-### `authBalanceOfUBIBeneficiary(bytes32 _userId) → uint256` (public)
-
-Retrieves the authorized balance of a UBI beneficiary
-
-
-
-
-
-### `authorize(bytes32 _userId, string _txId, uint256 _value)` (external)
-
-Authorizes an amount for a UBI beneficiary
-
-
-
-
-
-### `deauthorize(bytes32 _userId, string _txId)` (external)
-
-Deauthorizes an amount for a UBI beneficiary
 
 
 

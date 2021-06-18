@@ -8,9 +8,9 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
-import "./interface/IUBIBeneficiary.sol";
+import "./interface/IWallet.sol";
 import "./interface/IUBIReconciliationAccount.sol";
-import "./interface/IUBIBeneficiaryFactory.sol";
+import "./interface/IWalletFactory.sol";
 import "./interface/IVersionedContract.sol";
 
 /**
@@ -51,14 +51,14 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
 
     IERC20 public cUSDToken;
     ERC20PresetMinterPauser public cUBIAuthToken;
-    IUBIBeneficiaryFactory public ubiFactory;
+    IWalletFactory public walletFactory;
     IUBIReconciliationAccount public reconciliationAccount;
 
     // Default disbursement amount
     uint256 public disbursementWei = 100 ether;
 
     // Mapping of UBI Beneficiary identifiers to their contract address
-    EnumerableMap.UintToAddressMap private ubiBeneficiaries;
+    EnumerableMap.UintToAddressMap private wallets;
 
     /**
      * @notice Used to initialize a new Controller contract
@@ -73,8 +73,8 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
     ) {
         cUSDToken = IERC20(_cUSDToken);
         cUBIAuthToken = ERC20PresetMinterPauser(_cUBIAuthToken);
-        ubiFactory = IUBIBeneficiaryFactory(_factory);
-        address tmp = ubiFactory.createProxiedUBIReconciliationAccount(_custodian);
+        walletFactory = IWalletFactory(_factory);
+        address tmp = walletFactory.createProxiedUBIReconciliationAccount(_custodian);
         reconciliationAccount = IUBIReconciliationAccount(tmp);
     }
 
@@ -116,7 +116,7 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
      * @notice Enforces a _userId should not be mapped to an existing user / contract address
      */
     modifier userNotExist(bytes32 _userId) {
-        require(!ubiBeneficiaries.contains(uint256(_userId)), "ERR_USER_EXISTS");
+        require(!wallets.contains(uint256(_userId)), "ERR_USER_EXISTS");
         _;
     }
 
@@ -145,8 +145,8 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
      * @param _newFactoryAddress   new factory address
      */
     function _setUBIBeneficiaryFactory(address _newFactoryAddress) private {
-        ubiFactory = IUBIBeneficiaryFactory(_newFactoryAddress);
-        emit FactoryUpdated(address(ubiFactory), _newFactoryAddress);
+        walletFactory = IWalletFactory(_newFactoryAddress);
+        emit FactoryUpdated(address(walletFactory), _newFactoryAddress);
     }
 
     /**
@@ -165,21 +165,9 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
      * @return uint256 available balance
      */
     function balanceOfUBIBeneficiary(bytes32 _userId) public view returns (uint256) {
-        address ubiBeneficiaryAddress = ubiBeneficiaries.get(uint256(_userId));
-        IUBIBeneficiary user = IUBIBeneficiary(ubiBeneficiaryAddress);
+        address ubiBeneficiaryAddress = wallets.get(uint256(_userId));
+        IWallet user = IWallet(ubiBeneficiaryAddress);
         return user.availableBalance();
-    }
-
-    /**
-     * @notice Retrieves the authorized balance of a UBI beneficiary
-     *
-     * @param _userId user identifier
-     * @return uint256 authorized balance
-     */
-    function authBalanceOfUBIBeneficiary(bytes32 _userId) public view returns (uint256) {
-        address ubiBeneficiaryAddress = ubiBeneficiaries.get(uint256(_userId));
-        IUBIBeneficiary user = IUBIBeneficiary(ubiBeneficiaryAddress);
-        return user.authorizationBalance();
     }
 
     /**
@@ -217,8 +205,8 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
         string calldata _txId,
         uint256 _value
     ) private {
-        address ubiBeneficiaryAddress = ubiBeneficiaries.get(_userId);
-        IUBIBeneficiary user = IUBIBeneficiary(ubiBeneficiaryAddress);
+        address walletAddress = wallets.get(_userId);
+        IWallet user = IWallet(walletAddress);
         user.settle(_txId, _value, address(reconciliationAccount));
     }
 
@@ -242,9 +230,9 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
         whenNotPaused
         userNotExist(keccak256(bytes(_userId)))
     {
-        address newUBIBeneficiaryAddress = ubiFactory.createProxiedUBIBeneficiary(_userId);
+        address newUBIBeneficiaryAddress = walletFactory.createProxiedUBIBeneficiary(_userId);
         bytes32 key = keccak256(bytes(_userId));
-        ubiBeneficiaries.set(uint256(key), newUBIBeneficiaryAddress);
+        wallets.set(uint256(key), newUBIBeneficiaryAddress);
         cUSDToken.transfer(newUBIBeneficiaryAddress, disbursementWei);
 
         emit NewUser(key, newUBIBeneficiaryAddress);
@@ -257,7 +245,7 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
      * @return address of user's contract
      */
     function beneficiaryAddress(bytes32 _userId) public view returns (address) {
-        return ubiBeneficiaries.get(uint256(_userId), "ERR_USER_NOT_EXIST");
+        return wallets.get(uint256(_userId), "ERR_USER_NOT_EXIST");
     }
 
     /**
@@ -274,19 +262,19 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
     function transferOwnership(address newOwner) public override onlyOwner {
         // 1 Update owner on all UBIBeneficiary contracts
         uint256 i;
-        for (i = 0; i < ubiBeneficiaries.length(); i = i.add(1)) {
+        for (i = 0; i < wallets.length(); i = i.add(1)) {
             address ubiBeneficiaryAddress;
 
             // .at function returns a tuple of (uint256, address)
-            (, ubiBeneficiaryAddress) = ubiBeneficiaries.at(i);
+            (, ubiBeneficiaryAddress) = wallets.at(i);
 
-            IUBIBeneficiary user = IUBIBeneficiary(ubiBeneficiaryAddress);
+            IWallet user = IWallet(ubiBeneficiaryAddress);
             user.transferController(newOwner);
         }
 
         // 2 Update reconciliation account owner, cast it as a
         //      IUBIBeneficiary to use the transferController function
-        IUBIBeneficiary(address(reconciliationAccount)).transferController(newOwner);
+        IWallet(address(reconciliationAccount)).transferController(newOwner);
 
         // 3 Update owner of this contract
         super.transferOwnership(newOwner);
@@ -300,11 +288,11 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
      */
     function updateBeneficiaryImplementation(address _newLogic) external onlyOwner {
         uint256 i;
-        for (i = 0; i < ubiBeneficiaries.length(); i = i.add(1)) {
+        for (i = 0; i < wallets.length(); i = i.add(1)) {
             address ubiBeneficiaryAddress;
             // .at function returns a tuple of (uint256, address)
-            (, ubiBeneficiaryAddress) = ubiBeneficiaries.at(i);
-            ubiFactory.updateProxyImplementation(ubiBeneficiaryAddress, _newLogic);
+            (, ubiBeneficiaryAddress) = wallets.at(i);
+            walletFactory.updateProxyImplementation(ubiBeneficiaryAddress, _newLogic);
         }
     }
 
@@ -315,7 +303,7 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
      *
      */
     function updateReconciliationImplementation(address _newLogic) external onlyOwner {
-        ubiFactory.updateProxyImplementation(address(reconciliationAccount), _newLogic);
+        walletFactory.updateProxyImplementation(address(reconciliationAccount), _newLogic);
     }
 
     /**
@@ -367,7 +355,7 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
     function getBeneficiaryAddressAtIndex(uint256 _index) external view returns (address) {
         // .at function returns a tuple of (uint256, address)
         address ubiBeneficiaryAddress;
-        (, ubiBeneficiaryAddress) = ubiBeneficiaries.at(_index);
+        (, ubiBeneficiaryAddress) = wallets.at(_index);
 
         return ubiBeneficiaryAddress;
     }
@@ -377,6 +365,6 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
      *
      */
     function getBeneficiaryCount() external view returns (uint256) {
-        return ubiBeneficiaries.length();
+        return wallets.length();
     }
 }

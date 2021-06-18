@@ -1,8 +1,8 @@
 const Migrations = artifacts.require("Migrations");
 const Controller = artifacts.require("Controller");
-const UBIBeneficiary = artifacts.require("UBIBeneficiary");
+const Wallet = artifacts.require("Wallet");
 const UBIReconciliationAccount = artifacts.require("UBIReconciliationAccount");
-const Factory = artifacts.require("UBIBeneficiaryFactory");
+const WalletFactory = artifacts.require("WalletFactory");
 const ERC20 = artifacts.require("ERC20PresetMinterPauser");
 const config = require("./config.json");
 const utils = require("web3-utils");
@@ -19,7 +19,7 @@ module.exports = (deployer, network, accounts) => {
 	let factory, controller, reconciliationLogic, cUBIAuthToken, cUSDFake;
 
 	// Deploy logic/implementation contracts
-	deployer.deploy(UBIBeneficiary).then(async (ubiLogic) => {
+	deployer.deploy(Wallet).then(async (ubiLogic) => {
 		reconciliationLogic = await deployer.deploy(UBIReconciliationAccount);
 
 		// Deploy new ERC20 for auth token
@@ -38,7 +38,7 @@ module.exports = (deployer, network, accounts) => {
 
 		// Deploy factory
 		factory = await deployer.deploy(
-			Factory,
+			WalletFactory,
 			ubiLogic.address,
 			reconciliationLogic.address,
 			cUSDToUse,

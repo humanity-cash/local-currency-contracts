@@ -1,7 +1,7 @@
 const Controller = artifacts.require("Controller");
-const Factory = artifacts.require("UBIBeneficiaryFactory");
+const WalletFactory = artifacts.require("WalletFactory");
 const ERC20 = artifacts.require("ERC20PresetMinterPauser");
-const UBIBeneficiary = artifacts.require("UBIBeneficiary");
+const Wallet = artifacts.require("Wallet");
 const UBIReconciliationAccount = artifacts.require("UBIReconciliationAccount");
 const Web3 = require("web3");
 const truffleAssert = require("truffle-assertions");
@@ -24,10 +24,10 @@ contract("User Management", async (accounts) => {
 			"cUBIAUTH"
 		);
 
-		ubiLogic = await UBIBeneficiary.deployed();
+		ubiLogic = await Wallet.deployed();
 		reconcileLogic = await UBIReconciliationAccount.deployed();
 
-		factory = await Factory.new(
+		factory = await WalletFactory.new(
 			ubiLogic.address,
 			reconcileLogic.address,
 			cUSDTestToken.address,
@@ -124,7 +124,7 @@ contract("User Management", async (accounts) => {
 		let users = [];
 		for (let i = 0; i < beneficiaryCount; i++) {
 			const address = await controller.getBeneficiaryAddressAtIndex(i);
-			const ubi = new web3.eth.Contract(UBIBeneficiary.abi, address);
+			const ubi = new web3.eth.Contract(Wallet.abi, address);
 			const userId = await ubi.methods.userId().call();
 			const createdBlock = await ubi.methods.createdBlock().call();
 			users.push({

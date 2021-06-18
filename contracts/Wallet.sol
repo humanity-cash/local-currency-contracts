@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol";
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
-import "./interface/IUBIBeneficiary.sol";
+import "./interface/IWallet.sol";
 import "./interface/IVersionedContract.sol";
 
 /**
@@ -17,9 +17,9 @@ import "./interface/IVersionedContract.sol";
  *
  * @author Aaron Boyd <https://github.com/aaronmboyd>
  */
-contract UBIBeneficiary is
+contract Wallet is
     IVersionedContract,
-    IUBIBeneficiary,
+    IWallet,
     AccessControl,
     Initializable,
     ReentrancyGuard
@@ -35,14 +35,6 @@ contract UBIBeneficiary is
 
     bytes32 public constant CONTROLLER_ROLE = keccak256("CONTROLLER_ROLE");
     bytes32 public constant FACTORY_ROLE = keccak256("FACTORY_ROLE");
-
-    struct Authorization {
-        uint256 value;
-        bool deauthorized;
-        string txId;
-    }
-    mapping(bytes32 => Authorization) private authorizations;
-    bytes32[] private authorizationKeys;
 
     struct Settlement {
         uint256 value;
@@ -124,36 +116,6 @@ contract UBIBeneficiary is
     }
 
     /**
-     * @notice Return array of authorizationsKeys
-     *
-     * @dev Note this is marked external, you cannot return dynamically sized data target is a Web3 caller for iterating Authorizations
-     *
-     */
-    function getAuthorizationKeys() external view override returns (bytes32[] memory) {
-        return authorizationKeys;
-    }
-
-    /**
-     * @notice Return the primitive attributes of an Authorization struct
-     *
-     * @param _key Map key of the Authorization to return
-     *
-     */
-    function getAuthorizationAtKey(bytes32 _key)
-        external
-        view
-        override
-        returns (
-            uint256,
-            bool,
-            string memory
-        )
-    {
-        Authorization memory auth = authorizations[_key];
-        return (auth.value, auth.deauthorized, auth.txId);
-    }
-
-    /**
      * @notice Return the primitive attributes of an Settlement struct
      *
      * @param _key Map key of the Settlement to return
@@ -180,83 +142,6 @@ contract UBIBeneficiary is
         return cUSDBalance.sub(cAuthBalance);
     }
 
-    /**
-     * @notice retrieve authorization balance for this contract
-     *
-     * @return uint256 authorization balance for this contract
-     */
-    function authorizationBalance() external view override returns (uint256) {
-        return cUBIAuthToken.balanceOf(address(this));
-    }
-
-    /**
-     * @notice Implementation of deauthorization by deleting stored authorzation record and returning cUBIAUTH token to the main contract
-     *
-     * @param _txId Dynamic string txId of the transaction to de-authorize
-     *
-     * @dev We don't need to specify the transaction size here because it is stored in the Authorization struct
-     *
-     */
-    function _deauthorize(string calldata _txId) internal returns (uint256) {
-        bytes32 key = keccak256(bytes(_txId));
-        Authorization storage toDeauthorize = authorizations[key];
-        require(toDeauthorize.value > 0, "ERR_AUTH_NOT_EXIST");
-
-        toDeauthorize.deauthorized = true;
-        cUBIAuthToken.transfer(msg.sender, toDeauthorize.value);
-
-        emit DeauthorizationEvent(
-            keccak256(bytes(userId)),
-            address(this),
-            _txId,
-            toDeauthorize.value
-        );
-        return toDeauthorize.value;
-    }
-
-    /**
-     * @notice External method deauthorization
-     *
-     * @param _txId Dynamic string txId of the transaction to de-authorize
-     *
-     * @dev We don't need to specify the transaction size here because it is stored in the Authorization struct
-     *
-     */
-    function deauthorize(string calldata _txId)
-        external
-        override
-        onlyController(msg.sender)
-        nonReentrant
-        returns (uint256)
-    {
-        return _deauthorize(_txId);
-    }
-
-    /**
-     * @notice Store a new authorization 
-
-     * @param _txId Dynamic string txId of the transaction to authorize
-     * @param _value uint256 transaction amount
-     *
-     *
-    */
-    function authorize(string calldata _txId, uint256 _value)
-        external
-        override
-        onlyController(msg.sender)
-        nonReentrant
-    {
-        bytes32 key = keccak256(bytes(_txId));
-        require(authorizations[key].value == 0, "ERR_AUTH_EXISTS");
-
-        Authorization storage newAuth = authorizations[key];
-        newAuth.txId = _txId;
-        newAuth.deauthorized = false;
-        newAuth.value = _value;
-        authorizationKeys.push(key);
-
-        emit AuthorizationEvent(keccak256(bytes(userId)), address(this), _txId, _value);
-    }
 
     /**
      * @notice Perform a settlement by returning cUSD token to the reconciliation contract
@@ -275,11 +160,6 @@ contract UBIBeneficiary is
     ) external override onlyController(msg.sender) nonReentrant {
         bytes32 key = keccak256(bytes(_txId));
         require(settlements[key].value == 0, "ERR_SETTLE_EXISTS");
-
-        // Attempt deauthorization of this transaction if it has been pre-authorized first
-        if ((authorizations[key].value > 0) && (authorizations[key].deauthorized == false)) {
-            _deauthorize(_txId);
-        }
 
         // Then peform settlement
         settlementKeys.push(key);

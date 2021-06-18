@@ -8,36 +8,7 @@ pragma solidity ^0.8.0;
  *
  * @author Aaron Boyd <https://github.com/aaronmboyd>
  */
-interface IUBIBeneficiary {
-    /**
-     * @notice Triggered when an amount has been pre-authorized for a user
-     *
-     * @param _userId       Hashed bytes32 of the userId converted to uint256
-     * @param _ubiAddress   Celo address of the UBI Beneficiary
-     * @param _txId         Raw transaction ID for this event
-     * @param _amt          Amount of the transaction
-     */
-    event AuthorizationEvent(
-        bytes32 indexed _userId,
-        address indexed _ubiAddress,
-        string _txId,
-        uint256 _amt
-    );
-
-    /**
-     * @notice Triggered when an amount has been de-authorized for a user
-     *
-     * @param _userId       Hashed bytes32 of the userId converted to uint256
-     * @param _ubiAddress   Celo address of the UBI Beneficiary
-     * @param _txId         Raw transaction ID for this event
-     */
-    event DeauthorizationEvent(
-        bytes32 indexed _userId,
-        address indexed _ubiAddress,
-        string _txId,
-        uint256 _amt
-    );
-
+interface IWallet {
     /**
      * @notice Triggered when an amount has been settled for a user
      *
@@ -76,28 +47,6 @@ interface IUBIBeneficiary {
      */
     function getSettlementKeys() external view returns (bytes32[] memory);
 
-    /**
-     * @notice Return array of authorizationsKeys
-     *
-     * @dev Note this is marked external, you cannot return dynamically sized data target is a Web3 caller for iterating Authorizations
-     *
-     */
-    function getAuthorizationKeys() external view returns (bytes32[] memory);
-
-    /**
-     * @notice Return the primitive attributes of an Authorization struct
-     *
-     * @param _key Map key of the Authorization to return
-     *
-     */
-    function getAuthorizationAtKey(bytes32 _key)
-        external
-        view
-        returns (
-            uint256,
-            bool,
-            string memory
-        );
 
     /**
      * @notice Return the primitive attributes of an Settlement struct
@@ -113,33 +62,6 @@ interface IUBIBeneficiary {
      * @return uint256 usable balance for this contract
      */
     function availableBalance() external view returns (uint256);
-
-    /**
-     * @notice retrieve authorization balance for this contract
-     *
-     * @return uint256 authorization balance for this contract
-     */
-    function authorizationBalance() external view returns (uint256);
-
-    /**
-     * @notice External method deauthorization
-     *
-     * @param _txId Dynamic string txId of the transaction to de-authorize
-     *
-     * @dev We don't need to specify the transaction size here because it is stored in the Authorization struct
-     *
-     */
-    function deauthorize(string calldata _txId) external returns (uint256);
-
-    /**
-     * @notice Store a new authorization 
-
-     * @param _txId Dynamic string txId of the transaction to authorize
-     * @param _value uint256 transaction amount
-     *
-     *
-    */
-    function authorize(string calldata _txId, uint256 _value) external;
 
     /**
      * @notice Perform a settlement by returning cUSD token to the reconciliation contract

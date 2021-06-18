@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "./IUBIBeneficiary.sol";
+import "./IWallet.sol";
 
 /**
  * @title Celo UBI reconciliation contract interface
@@ -12,7 +12,7 @@ import "./IUBIBeneficiary.sol";
  *
  * @author Aaron Boyd <https://github.com/aaronmboyd>
  */
-interface IUBIReconciliationAccount is IUBIBeneficiary {
+interface IUBIReconciliationAccount is IWallet {
     /**
      * @notice triggered when an amount has been reconciled
      *

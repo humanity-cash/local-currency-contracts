@@ -1,11 +1,11 @@
-## `UBIBeneficiaryFactory`
+## `WalletFactory`
 
 
 
 
 
 
-### `constructor(contract IUBIBeneficiary _ubiLogic, contract IUBIReconciliationAccount _reconciliationLogic, contract IERC20 _cUSDToken, contract ERC20PresetMinterPauser _cUBIAuthToken)` (public)
+### `constructor(contract IWallet _ubiLogic, contract IUBIReconciliationAccount _reconciliationLogic, contract IERC20 _cUSDToken, contract ERC20PresetMinterPauser _cUBIAuthToken)` (public)
 
 Constructor for UBIBeneficiaryFactory contract
 

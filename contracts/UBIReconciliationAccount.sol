@@ -2,7 +2,7 @@
 pragma solidity ^0.8.0;
 
 import "./interface/IUBIReconciliationAccount.sol";
-import "./UBIBeneficiary.sol";
+import "./Wallet.sol";
 
 /**
  * @title Celo UBI reconciliation contract
@@ -13,7 +13,7 @@ import "./UBIBeneficiary.sol";
  *
  * @author Aaron Boyd <https://github.com/aaronmboyd>
  */
-contract UBIReconciliationAccount is IUBIReconciliationAccount, UBIBeneficiary {
+contract UBIReconciliationAccount is IUBIReconciliationAccount, Wallet {
     using SafeERC20 for IERC20;
     using SafeERC20 for ERC20PresetMinterPauser;
 
