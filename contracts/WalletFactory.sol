@@ -6,17 +6,17 @@ import "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol";
 import "@openzeppelin/contracts/proxy/transparent/TransparentUpgradeableProxy.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol";
-import "./interface/IUBIBeneficiary.sol";
+import "./interface/IWallet.sol";
 import "./interface/IUBIReconciliationAccount.sol";
-import "./interface/IUBIBeneficiaryFactory.sol";
+import "./interface/IWalletFactory.sol";
 import "./interface/IVersionedContract.sol";
 
-contract UBIBeneficiaryFactory is IVersionedContract, IUBIBeneficiaryFactory, Ownable {
+contract WalletFactory is IVersionedContract, IWalletFactory, Ownable {
     using SafeERC20 for IERC20;
     using SafeERC20 for ERC20PresetMinterPauser;
 
     ProxyAdmin private proxyAdmin;
-    IUBIBeneficiary private ubiLogic;
+    IWallet private ubiLogic;
     IUBIReconciliationAccount private reconciliationLogic;
     IERC20 private cUSDToken;
     ERC20PresetMinterPauser private cUBIAuthToken;
@@ -26,7 +26,7 @@ contract UBIBeneficiaryFactory is IVersionedContract, IUBIBeneficiaryFactory, Ow
      *
      */
     constructor(
-        IUBIBeneficiary _ubiLogic,
+        IWallet _ubiLogic,
         IUBIReconciliationAccount _reconciliationLogic,
         IERC20 _cUSDToken,
         ERC20PresetMinterPauser _cUBIAuthToken

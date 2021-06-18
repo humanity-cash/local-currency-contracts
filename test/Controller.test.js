@@ -1,14 +1,14 @@
-const UBIController = artifacts.require("UBIController");
-const Factory = artifacts.require("UBIBeneficiaryFactory");
+const Controller = artifacts.require("Controller");
+const WalletFactory = artifacts.require("WalletFactory");
 const ERC20 = artifacts.require("ERC20PresetMinterPauser");
-const UBIBeneficiary = artifacts.require("UBIBeneficiary");
+const Wallet = artifacts.require("Wallet");
 const UBIReconciliationAccount = artifacts.require("UBIReconciliationAccount");
 const Web3 = require("web3");
 const config = require("./config.json");
 const truffleAssert = require("truffle-assertions");
 const { uuid } = require("uuidv4");
 
-contract("UBIController", async (accounts) => {
+contract("Controller", async (accounts) => {
 	const owner = accounts[0];
 
 	let controller, factory, cUSDTestToken, cUBIAuthToken;
@@ -20,17 +20,17 @@ contract("UBIController", async (accounts) => {
 			"cUBIAUTH"
 		);
 
-		ubiLogic = await UBIBeneficiary.deployed();
+		ubiLogic = await Wallet.deployed();
 		reconcileLogic = await UBIReconciliationAccount.deployed();
 
-		factory = await Factory.new(
+		factory = await WalletFactory.new(
 			ubiLogic.address,
 			reconcileLogic.address,
 			cUSDTestToken.address,
 			cUBIAuthToken.address
 		);
 
-		controller = await UBIController.new(
+		controller = await Controller.new(
 			cUSDTestToken.address,
 			cUBIAuthToken.address,
 			factory.address,
@@ -75,7 +75,7 @@ contract("UBIController", async (accounts) => {
 	});
 
 	it("Should be able to update factory", async () => {
-		const factory = await controller.ubiFactory();
+		const factory = await controller.walletFactory();
 		await controller.setUBIBeneficiaryFactory(factory);
 	});
 
@@ -99,7 +99,7 @@ contract("UBIController", async (accounts) => {
 	});
 
 	it("Should be able to update beneficiary proxy logic contract after creating 3 new accounts", async () => {
-		const newLogic = await UBIBeneficiary.new();
+		const newLogic = await Wallet.new();
 		await controller.newUbiBeneficiary(uuid());
 		await controller.newUbiBeneficiary(uuid());
 		await controller.newUbiBeneficiary(uuid());
@@ -112,7 +112,7 @@ contract("UBIController", async (accounts) => {
 	});
 
 	it("Should be able to update the factory and create a new user", async () => {
-		const newFactory = await Factory.new(
+		const newFactory = await WalletFactory.new(
 			ubiLogic.address,
 			reconcileLogic.address,
 			cUSDTestToken.address,

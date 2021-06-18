@@ -1,4 +1,4 @@
-## `UBIBeneficiary`
+## `Wallet`
 
 
 
@@ -43,23 +43,6 @@ Return array of settlementKeys
 Note this is marked external, you cannot return dynamically sized data target is a Web3 caller for iterating Settlements
 
 
-### `getAuthorizationKeys() → bytes32[]` (external)
-
-Return array of authorizationsKeys
-
-
-
-Note this is marked external, you cannot return dynamically sized data target is a Web3 caller for iterating Authorizations
-
-
-### `getAuthorizationAtKey(bytes32 _key) → uint256, bool, string` (external)
-
-Return the primitive attributes of an Authorization struct
-
-
-
-
-
 ### `getSettlementAtKey(bytes32 _key) → uint256, string` (external)
 
 Return the primitive attributes of an Settlement struct
@@ -71,40 +54,6 @@ Return the primitive attributes of an Settlement struct
 ### `availableBalance() → uint256` (external)
 
 retrieve available balance for this contract
-
-
-
-
-
-### `authorizationBalance() → uint256` (external)
-
-retrieve authorization balance for this contract
-
-
-
-
-
-### `_deauthorize(string _txId) → uint256` (internal)
-
-Implementation of deauthorization by deleting stored authorzation record and returning cUBIAUTH token to the main contract
-
-
-
-We don't need to specify the transaction size here because it is stored in the Authorization struct
-
-
-### `deauthorize(string _txId) → uint256` (external)
-
-External method deauthorization
-
-
-
-We don't need to specify the transaction size here because it is stored in the Authorization struct
-
-
-### `authorize(string _txId, uint256 _value)` (external)
-
-Store a new authorization 
 
 
 

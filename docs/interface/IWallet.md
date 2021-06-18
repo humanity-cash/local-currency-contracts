@@ -1,4 +1,4 @@
-## `IUBIBeneficiary`
+## `IWallet`
 
 
 
@@ -24,23 +24,6 @@ Return array of settlementKeys
 Note this is marked external, you cannot return dynamically sized data target is a Web3 caller for iterating Settlements
 
 
-### `getAuthorizationKeys() → bytes32[]` (external)
-
-Return array of authorizationsKeys
-
-
-
-Note this is marked external, you cannot return dynamically sized data target is a Web3 caller for iterating Authorizations
-
-
-### `getAuthorizationAtKey(bytes32 _key) → uint256, bool, string` (external)
-
-Return the primitive attributes of an Authorization struct
-
-
-
-
-
 ### `getSettlementAtKey(bytes32 _key) → uint256, string` (external)
 
 Return the primitive attributes of an Settlement struct
@@ -52,31 +35,6 @@ Return the primitive attributes of an Settlement struct
 ### `availableBalance() → uint256` (external)
 
 retrieve available balance for this contract
-
-
-
-
-
-### `authorizationBalance() → uint256` (external)
-
-retrieve authorization balance for this contract
-
-
-
-
-
-### `deauthorize(string _txId) → uint256` (external)
-
-External method deauthorization
-
-
-
-We don't need to specify the transaction size here because it is stored in the Authorization struct
-
-
-### `authorize(string _txId, uint256 _value)` (external)
-
-Store a new authorization 
 
 
 
@@ -95,22 +53,6 @@ If there was an existing authorization for this txId, de-authorize it, for the o
 
 Transfer control of the UBIBeneficiary
 
-
-
-
-
-
-### `AuthorizationEvent(bytes32 _userId, address _ubiAddress, string _txId, uint256 _amt)`
-
-Triggered when an amount has been pre-authorized for a user
-
-
-
-
-
-### `DeauthorizationEvent(bytes32 _userId, address _ubiAddress, string _txId, uint256 _amt)`
-
-Triggered when an amount has been de-authorized for a user
 
 
 

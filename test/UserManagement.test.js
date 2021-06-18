@@ -1,7 +1,7 @@
-const UBIController = artifacts.require("UBIController");
-const Factory = artifacts.require("UBIBeneficiaryFactory");
+const Controller = artifacts.require("Controller");
+const WalletFactory = artifacts.require("WalletFactory");
 const ERC20 = artifacts.require("ERC20PresetMinterPauser");
-const UBIBeneficiary = artifacts.require("UBIBeneficiary");
+const Wallet = artifacts.require("Wallet");
 const UBIReconciliationAccount = artifacts.require("UBIReconciliationAccount");
 const Web3 = require("web3");
 const truffleAssert = require("truffle-assertions");
@@ -24,17 +24,17 @@ contract("User Management", async (accounts) => {
 			"cUBIAUTH"
 		);
 
-		ubiLogic = await UBIBeneficiary.deployed();
+		ubiLogic = await Wallet.deployed();
 		reconcileLogic = await UBIReconciliationAccount.deployed();
 
-		factory = await Factory.new(
+		factory = await WalletFactory.new(
 			ubiLogic.address,
 			reconcileLogic.address,
 			cUSDTestToken.address,
 			cUBIAuthToken.address
 		);
 
-		controller = await UBIController.new(
+		controller = await Controller.new(
 			cUSDTestToken.address,
 			cUBIAuthToken.address,
 			factory.address,
@@ -60,12 +60,12 @@ contract("User Management", async (accounts) => {
 		cUSDMinted = await cUSDTestToken.balanceOf(controller.address);
 	});
 
-	it("Should verify UBIController contract has cUSD balance", async () => {
+	it("Should verify Controller contract has cUSD balance", async () => {
 		const balance = await cUSDTestToken.balanceOf(controller.address);
 		assert(balance > 0);
 	});
 
-	it("Should verify UBIController has disbursementWei public attribute", async () => {
+	it("Should verify Controller has disbursementWei public attribute", async () => {
 		disbursementWei = await controller.disbursementWei();
 		assert(disbursementWei > 0);
 	});
@@ -86,12 +86,12 @@ contract("User Management", async (accounts) => {
 		);
 	});
 
-	it("Should verify UBIController cUSD balance is reduced by disbursementWei", async () => {
+	it("Should verify Controller cUSD balance is reduced by disbursementWei", async () => {
 		const balance = await cUSDTestToken.balanceOf(controller.address);
 		assert.equal(
 			balance.cmp(cUSDMinted.sub(disbursementWei)),
 			0,
-			`UBIController contract cUSD balance should be ${cUSDMinted.sub(
+			`Controller contract cUSD balance should be ${cUSDMinted.sub(
 				disbursementWei
 			)}`
 		);
@@ -124,7 +124,7 @@ contract("User Management", async (accounts) => {
 		let users = [];
 		for (let i = 0; i < beneficiaryCount; i++) {
 			const address = await controller.getBeneficiaryAddressAtIndex(i);
-			const ubi = new web3.eth.Contract(UBIBeneficiary.abi, address);
+			const ubi = new web3.eth.Contract(Wallet.abi, address);
 			const userId = await ubi.methods.userId().call();
 			const createdBlock = await ubi.methods.createdBlock().call();
 			users.push({
