@@ -1,63 +1,22 @@
-const Controller = artifacts.require("Controller");
-const WalletFactory = artifacts.require("WalletFactory");
-const ERC20 = artifacts.require("ERC20PresetMinterPauser");
 const Wallet = artifacts.require("Wallet");
-const UBIReconciliationAccount = artifacts.require("UBIReconciliationAccount");
-const Web3 = require("web3");
 const truffleAssert = require("truffle-assertions");
-const config = require("./config.json");
+const { deploy } = require("./deploy");
 const { uuid } = require("uuidv4");
 
 contract("User Management", async (accounts) => {
-	let controller,
-		disbursementWei,
-		cUSDMinted,
-		user1,
-		factory,
-		cUSDTestToken,
-		cUBIAuthToken;
+	let controller, cUSDMinted, user1, factory, cUSDTestToken, cUBIAuthToken;
 
 	before(async () => {
-		cUSDTestToken = await ERC20.new("cUSD", "cUSD");
-		cUBIAuthToken = await ERC20.new(
-			"Celo UBI Authorization Token",
-			"cUBIAUTH"
-		);
+		let deployment = await deploy();
 
-		ubiLogic = await Wallet.deployed();
-		reconcileLogic = await UBIReconciliationAccount.deployed();
-
-		factory = await WalletFactory.new(
-			ubiLogic.address,
-			reconcileLogic.address,
-			cUSDTestToken.address,
-			cUBIAuthToken.address
-		);
-
-		controller = await Controller.new(
-			cUSDTestToken.address,
-			cUBIAuthToken.address,
-			factory.address,
-			config.custodianAccount
-		);
-
-		await factory.transferOwnership(controller.address);
-
-		await cUBIAuthToken.grantRole(
-			Web3.utils.keccak256("DEFAULT_ADMIN_ROLE"),
-			controller.address
-		);
-		await cUBIAuthToken.grantRole(
-			Web3.utils.keccak256("MINTER_ROLE"),
-			controller.address
-		);
-
-		result = await cUSDTestToken.mint(
-			controller.address,
-			Web3.utils.toWei("10000000", "ether")
-		);
+		controller = deployment.controller;
+		factory = deployment.factory;
+		cUSDTestToken = deployment.cUSDTestToken;
+		cUBIAuthToken = deployment.cUBIAuthToken;
 
 		cUSDMinted = await cUSDTestToken.balanceOf(controller.address);
+		user1 = uuid();
+		await controller.newWallet(user1);
 	});
 
 	it("Should verify Controller contract has cUSD balance", async () => {
@@ -65,68 +24,33 @@ contract("User Management", async (accounts) => {
 		assert(balance > 0);
 	});
 
-	it("Should verify Controller has disbursementWei public attribute", async () => {
-		disbursementWei = await controller.disbursementWei();
-		assert(disbursementWei > 0);
-	});
-
-	it("Should create a new user with cUSD balance of disbursementWei", async () => {
-		user1 = uuid();
-		await controller.newUbiBeneficiary(user1);
-
-		const user1Bytes32 = Web3.utils.keccak256(user1);
-		const address = await controller.beneficiaryAddress(user1Bytes32);
-		assert(address > 0x0);
-
-		const userBalance = await cUSDTestToken.balanceOf(address);
-		assert.equal(
-			userBalance.cmp(disbursementWei),
-			0,
-			`UBI Beneficiary cUSD balance should be ${disbursementWei}`
-		);
-	});
-
-	it("Should verify Controller cUSD balance is reduced by disbursementWei", async () => {
-		const balance = await cUSDTestToken.balanceOf(controller.address);
-		assert.equal(
-			balance.cmp(cUSDMinted.sub(disbursementWei)),
-			0,
-			`Controller contract cUSD balance should be ${cUSDMinted.sub(
-				disbursementWei
-			)}`
-		);
-	});
-
 	it("Should not create a user that already exists", async () => {
 		await truffleAssert.fails(
-			controller.newUbiBeneficiary(user1),
+			controller.newWallet(user1),
 			truffleAssert.ErrorType.REVERT
 		);
 	});
 
 	it("Should create three more users and count a total", async () => {
-		user1 = uuid();
-		await controller.newUbiBeneficiary(user1);
+		let user2 = uuid();
+		await controller.newWallet(user2);
 
-		user2 = uuid();
-		await controller.newUbiBeneficiary(user2);
+		let user3 = uuid();
+		await controller.newWallet(user3);
 
-		user3 = uuid();
-		await controller.newUbiBeneficiary(user3);
-
-		const beneficiaryCount = await controller.getBeneficiaryCount();
-		assert(beneficiaryCount == 4);
+		const walletCount = await controller.getWalletCount();
+		assert.equal(walletCount, 3);
 	});
 
 	it("Should iterate the users", async () => {
-		const beneficiaryCount = await controller.getBeneficiaryCount();
+		const walletCount = await controller.getWalletCount();
 
 		let users = [];
-		for (let i = 0; i < beneficiaryCount; i++) {
-			const address = await controller.getBeneficiaryAddressAtIndex(i);
-			const ubi = new web3.eth.Contract(Wallet.abi, address);
-			const userId = await ubi.methods.userId().call();
-			const createdBlock = await ubi.methods.createdBlock().call();
+		for (let i = 0; i < walletCount; i++) {
+			const address = await controller.getWalletAddressAtIndex(i);
+			const wallet = new web3.eth.Contract(Wallet.abi, address);
+			const userId = await wallet.methods.userId().call();
+			const createdBlock = await wallet.methods.createdBlock().call();
 			users.push({
 				userId: userId,
 				address: address,
@@ -135,6 +59,6 @@ contract("User Management", async (accounts) => {
 		}
 		// console.log(users);
 		assert(users);
-		assert(users.length == 4);
+		assert.equal(users.length, 3);
 	});
 });

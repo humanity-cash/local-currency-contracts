@@ -1,68 +1,27 @@
-const Controller = artifacts.require("Controller");
 const WalletFactory = artifacts.require("WalletFactory");
-const ERC20 = artifacts.require("ERC20PresetMinterPauser");
 const Wallet = artifacts.require("Wallet");
-const UBIReconciliationAccount = artifacts.require("UBIReconciliationAccount");
 const Web3 = require("web3");
-const config = require("./config.json");
 const truffleAssert = require("truffle-assertions");
+const { deploy } = require("./deploy");
 const { uuid } = require("uuidv4");
 
 contract("Controller", async (accounts) => {
 	const owner = accounts[0];
 
-	let controller, factory, cUSDTestToken, cUBIAuthToken;
+	let controller, factory, cUSDTestToken, wallet;
 
 	before(async () => {
-		cUSDTestToken = await ERC20.new("cUSD", "cUSD");
-		cUBIAuthToken = await ERC20.new(
-			"Celo UBI Authorization Token",
-			"cUBIAUTH"
-		);
+		let deployment = await deploy();
 
-		ubiLogic = await Wallet.deployed();
-		reconcileLogic = await UBIReconciliationAccount.deployed();
-
-		factory = await WalletFactory.new(
-			ubiLogic.address,
-			reconcileLogic.address,
-			cUSDTestToken.address,
-			cUBIAuthToken.address
-		);
-
-		controller = await Controller.new(
-			cUSDTestToken.address,
-			cUBIAuthToken.address,
-			factory.address,
-			config.custodianAccount
-		);
-
-		await factory.transferOwnership(controller.address);
-
-		await cUBIAuthToken.grantRole(
-			Web3.utils.keccak256("DEFAULT_ADMIN_ROLE"),
-			controller.address
-		);
-		await cUBIAuthToken.grantRole(
-			Web3.utils.keccak256("MINTER_ROLE"),
-			controller.address
-		);
-
-		result = await cUSDTestToken.mint(
-			controller.address,
-			Web3.utils.toWei("10000000", "ether")
-		);
+		wallet = deployment.wallet;
+		controller = deployment.controller;
+		factory = deployment.factory;
+		cUSDTestToken = deployment.cUSDTestToken;
 	});
 
 	it("Should read public attributes for important internal addresses", async () => {
-		const cUSDToken = await controller.cUSDToken();
+		const cUSDToken = await controller.erc20Token();
 		assert(cUSDToken);
-
-		const cUBIAuthToken = await controller.cUBIAuthToken();
-		assert(cUBIAuthToken);
-
-		const reconciliationAccount = await controller.reconciliationAccount();
-		assert(reconciliationAccount);
 	});
 
 	it("Should have an owner matching the deployer address", async () => {
@@ -70,24 +29,9 @@ contract("Controller", async (accounts) => {
 		assert.equal(owner, contractOwner, `Owner should be ${owner}`);
 	});
 
-	it("Should be able to update custodian account", async () => {
-		await controller.setCustodian(config.updateCustodianAccount);
-	});
-
 	it("Should be able to update factory", async () => {
 		const factory = await controller.walletFactory();
-		await controller.setUBIBeneficiaryFactory(factory);
-	});
-
-	it("Should be able to read and update disbursement amount", async () => {
-		let expected = Web3.utils.toWei("100", "ether");
-		let disbursementWei = await controller.disbursementWei();
-		assert(expected == disbursementWei);
-
-		await controller.setDisbursementWei(Web3.utils.toWei("150", "ether"));
-		expected = Web3.utils.toWei("150", "ether");
-		disbursementWei = await controller.disbursementWei();
-		assert(expected == disbursementWei);
+		await controller.setWalletFactory(factory);
 	});
 
 	it("Should be able to pause", async () => {
@@ -98,55 +42,36 @@ contract("Controller", async (accounts) => {
 		await controller.unpause();
 	});
 
-	it("Should be able to update beneficiary proxy logic contract after creating 3 new accounts", async () => {
+	it("Should be able to update wallet proxy logic contract after creating 3 new accounts", async () => {
 		const newLogic = await Wallet.new();
-		await controller.newUbiBeneficiary(uuid());
-		await controller.newUbiBeneficiary(uuid());
-		await controller.newUbiBeneficiary(uuid());
-		await controller.updateBeneficiaryImplementation(newLogic.address);
-	});
-
-	it("Should be able to update reconciler proxy logic contract", async () => {
-		const newLogic = await UBIReconciliationAccount.new();
-		await controller.updateReconciliationImplementation(newLogic.address);
+		await controller.newWallet(uuid());
+		await controller.newWallet(uuid());
+		await controller.newWallet(uuid());
+		await controller.updateWalletImplementation(newLogic.address);
 	});
 
 	it("Should be able to update the factory and create a new user", async () => {
 		const newFactory = await WalletFactory.new(
-			ubiLogic.address,
-			reconcileLogic.address,
-			cUSDTestToken.address,
-			cUBIAuthToken.address
+			wallet.address,
+			cUSDTestToken.address
 		);
-		await controller.setUBIBeneficiaryFactory(newFactory.address);
-		await controller.newUbiBeneficiary(uuid());
+		await controller.setWalletFactory(newFactory.address);
+		await controller.newWallet(uuid());
 	});
 
 	it("Should be able to emergency withdraw after pausing", async () => {
-		const controllerBalanceOf = await cUSDTestToken.balanceOf(
-			controller.address
-		);
-
 		await controller.pause();
-		await controller.withdrawToCustodian();
+		await controller.withdrawToOwner();
 		await controller.unpause();
 
 		const controllerBalanceOfNew = await cUSDTestToken.balanceOf(
 			controller.address
 		);
-		const custodianBalanceOf = await cUSDTestToken.balanceOf(
-			config.updateCustodianAccount
-		); // custodian had previously been updated
 
-		assert.equal(
-			custodianBalanceOf.cmp(controllerBalanceOf),
-			0,
-			`Custodian cUSD balance should be ${controllerBalanceOf}`
-		);
 		assert.equal(
 			controllerBalanceOfNew,
 			0,
-			`UBI Controller cUSD balance should be ${0}`
+			`Walllet cUSD balance should be ${0}`
 		);
 	});
 
@@ -160,9 +85,9 @@ contract("Controller", async (accounts) => {
 		let user2 = uuid();
 		let user3 = uuid();
 
-		await controller.newUbiBeneficiary(user1);
-		await controller.newUbiBeneficiary(user2);
-		await controller.newUbiBeneficiary(user3);
+		await controller.newWallet(user1);
+		await controller.newWallet(user2);
+		await controller.newWallet(user3);
 
 		await controller.transferOwnership(accounts[1]);
 		const contractOwner = await controller.owner();
@@ -170,13 +95,6 @@ contract("Controller", async (accounts) => {
 			accounts[1],
 			contractOwner,
 			`Owner should now be ${accounts[1]}`
-		);
-	});
-
-	it("Should not be able to update custodian account after transferring ownership", async () => {
-		await truffleAssert.fails(
-			controller.setCustodian(config.updateCustodianAccount),
-			truffleAssert.ErrorType.REVERT
 		);
 	});
 });

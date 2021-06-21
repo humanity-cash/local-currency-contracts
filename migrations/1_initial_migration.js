@@ -1,7 +1,6 @@
 const Migrations = artifacts.require("Migrations");
 const Controller = artifacts.require("Controller");
 const Wallet = artifacts.require("Wallet");
-const UBIReconciliationAccount = artifacts.require("UBIReconciliationAccount");
 const WalletFactory = artifacts.require("WalletFactory");
 const ERC20 = artifacts.require("ERC20PresetMinterPauser");
 const config = require("./config.json");
@@ -16,19 +15,10 @@ module.exports = (deployer, network, accounts) => {
 	let configToUse = config[`${network}`];
 	if (!configToUse) configToUse = config["development"];
 
-	let factory, controller, reconciliationLogic, cUBIAuthToken, cUSDFake;
+	let factory, controller, cUSDFake;
 
 	// Deploy logic/implementation contracts
-	deployer.deploy(Wallet).then(async (ubiLogic) => {
-		reconciliationLogic = await deployer.deploy(UBIReconciliationAccount);
-
-		// Deploy new ERC20 for auth token
-		cUBIAuthToken = await deployer.deploy(
-			ERC20,
-			"Celo UBI Authorization Token",
-			"cUBIAUTH"
-		);
-
+	deployer.deploy(Wallet).then(async (wallet) => {
 		// If we are local, create a fake cUSD (there wont be one deployed here)
 		let cUSDToUse = configToUse.cUSDToken;
 		if (network === "local") {
@@ -39,19 +29,15 @@ module.exports = (deployer, network, accounts) => {
 		// Deploy factory
 		factory = await deployer.deploy(
 			WalletFactory,
-			ubiLogic.address,
-			reconciliationLogic.address,
-			cUSDToUse,
-			cUBIAuthToken.address
+			wallet.address,
+			cUSDToUse
 		);
 
 		// Deploy controller
 		controller = await deployer.deploy(
 			Controller,
 			cUSDToUse,
-			cUBIAuthToken.address,
-			factory.address,
-			configToUse.custodianAccount
+			factory.address
 		);
 
 		// Make controller own factory
@@ -64,16 +50,6 @@ module.exports = (deployer, network, accounts) => {
 				utils.toWei("10000000", "ether")
 			);
 		}
-
-		// Make controller minter/admin of cUBIAuth
-		await cUBIAuthToken.grantRole(
-			utils.keccak256("DEFAULT_ADMIN_ROLE"),
-			controller.address
-		);
-		await cUBIAuthToken.grantRole(
-			utils.keccak256("MINTER_ROLE"),
-			controller.address
-		);
 
 		// Give ownership of controller to the operational account
 		await controller.transferOwnership(configToUse.initialOwner);

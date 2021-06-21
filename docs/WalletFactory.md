@@ -5,9 +5,9 @@
 
 
 
-### `constructor(contract IWallet _ubiLogic, contract IUBIReconciliationAccount _reconciliationLogic, contract IERC20 _cUSDToken, contract ERC20PresetMinterPauser _cUBIAuthToken)` (public)
+### `constructor(contract IWallet _wallet, contract IERC20 _erc20Token)` (public)
 
-Constructor for UBIBeneficiaryFactory contract
+Constructor for WalletFactory contract
 
 
 
@@ -19,17 +19,9 @@ Returns the storage, major, minor, and patch version of the contract.
 
 
 
-### `createProxiedUBIBeneficiary(string _userId) → address` (external)
+### `createProxiedWallet(string _userId) → address` (external)
 
-Create a new UBI Beneficiary proxy contract
-
-
-
-
-
-### `createProxiedUBIReconciliationAccount(address _custodian) → address` (external)
-
-Create a new UBI Reconciliation proxy contract
+Create a new Wallet proxy contract
 
 
 
