@@ -1,110 +1,45 @@
-const Controller = artifacts.require("Controller");
-const WalletFactory = artifacts.require("WalletFactory");
 const Wallet = artifacts.require("Wallet");
-const UBIReconciliationAccount = artifacts.require("UBIReconciliationAccount");
-const ERC20 = artifacts.require("ERC20PresetMinterPauser");
 const Web3 = require("web3");
 const truffleAssert = require("truffle-assertions");
-const config = require("./config.json");
+const { deploy } = require("./deploy");
 const { uuid } = require("uuidv4");
 
 contract("Settlement", async (accounts) => {
-	let controller, factory, cUSDTestToken, cUBIAuthToken, userId;
+	let controller, factory, testToken, userId;
 
 	before(async () => {
-		cUSDTestToken = await ERC20.new("cUSD", "cUSD");
-		cUBIAuthToken = await ERC20.new(
-			"Celo UBI Authorization Token",
-			"cUBIAUTH"
-		);
+		let deployment = await deploy();
 
-		ubiLogic = await Wallet.deployed();
-		reconcileLogic = await UBIReconciliationAccount.deployed();
-
-		factory = await WalletFactory.new(
-			ubiLogic.address,
-			reconcileLogic.address,
-			cUSDTestToken.address,
-			cUBIAuthToken.address
-		);
-
-		controller = await Controller.new(
-			cUSDTestToken.address,
-			cUBIAuthToken.address,
-			factory.address,
-			config.custodianAccount
-		);
-
-		await factory.transferOwnership(controller.address);
-
-		await cUBIAuthToken.grantRole(
-			Web3.utils.keccak256("DEFAULT_ADMIN_ROLE"),
-			controller.address
-		);
-		await cUBIAuthToken.grantRole(
-			Web3.utils.keccak256("MINTER_ROLE"),
-			controller.address
-		);
-
-		result = await cUSDTestToken.mint(
-			controller.address,
-			Web3.utils.toWei("10000000", "ether")
-		);
+		controller = deployment.controller;
+		factory = deployment.factory;
+		testToken = deployment.testToken
 
 		userId = uuid();
-		await controller.newUbiBeneficiary(userId);
+		await controller.newWallet(userId);
 		userId = Web3.utils.keccak256(userId);
+
+		await testToken.mint(
+			await controller.getWalletAddress(userId),
+			Web3.utils.toWei("100", "ether")
+		);
 	});
 
-	it("Should settle a payment for a user", async () => {
+	xit("Should settle a payment for a user", async () => {
 		const txId1 = uuid();
 		const settleAmt = Web3.utils.toWei("11.11", "ether");
 		await controller.settle(userId, txId1, settleAmt);
-		const balance = await controller.balanceOfUBIBeneficiary(userId);
+		const balance = await controller.balanceOfWallet(userId);
 		const expected = Web3.utils.toWei("88.89", "ether");
 		assert.equal(
-			balance,
+			balance.toString(),
 			expected,
-			`cUSD Balance of UBI Beneficiary should be ${expected}`
+			`token Balance of wallet should be ${expected}`
 		);
 	});
 
-	it("Should have a settled balance in reconciliation account", async () => {
-		const expected = Web3.utils.toWei("11.11", "ether");
-		const reconciliationAccount = await controller.reconciliationAccount();
-		const balance = await cUSDTestToken.balanceOf(reconciliationAccount);
-		assert.equal(
-			balance,
-			expected,
-			`Reconciliation account cUSD balance should equal ${expected}`
-		);
-	});
+	// todo add settle twice fail test
 
-	it("Should peform new authorize, deauthorize (implicitly) and settle, and have this summed cUSD balance in reconciliation account", async () => {
-		const amt = Web3.utils.toWei("22.22", "ether");
-		const txId2 = uuid();
-		controller.settle(userId, txId2, amt);
-		const reconciliationAccount = await controller.reconciliationAccount();
-		const balance = await cUSDTestToken.balanceOf(reconciliationAccount);
-		const expected = Web3.utils.toWei("33.33", "ether");
-		assert.equal(
-			balance,
-			expected,
-			`Reconciliation account cUSD balance should equal ${expected}`
-		);
-	});
-
-	it("Should peform reconciliation to custodian account and have reconciled balance", async () => {
-		const expected = Web3.utils.toWei("33.33", "ether");
-		await controller.reconcile();
-		const custodian = config.custodianAccount;
-		const balance = await cUSDTestToken.balanceOf(custodian);
-		assert.equal(
-			balance,
-			expected,
-			`Custodian cUSD balance after reconciliation should equal ${expected}`
-		);
-	});
+	// todo add settle error test for sender that is not controller
 
 	it("Should not settle a payment for 0 amount", async () => {
 		const settleAmt = Web3.utils.toWei("0", "ether");
@@ -125,27 +60,27 @@ contract("Settlement", async (accounts) => {
 	it("Should count settlements for a user after settling a new payment", async () => {
 		const amt = Web3.utils.toWei("11.11", "ether");
 		await controller.settle(userId, uuid(), amt);
-		const address = await controller.beneficiaryAddress(userId);
-		// console.log("UBI Beneficiary address = " + address);
-		const ubi = new web3.eth.Contract(Wallet.abi, address);
-		const keys = await ubi.methods.getSettlementKeys().call();
+		const address = await controller.getWalletAddress(userId);
+		const walletContract = new web3.eth.Contract(Wallet.abi, address);
+		const keys = await walletContract.methods.getSettlementKeys().call();
 		// console.log(keys);
-		assert(keys.length == 3);
+		assert.equal(keys.length, 1);
 	});
 
 	it("Should iterate settlements", async () => {
-		const address = await controller.beneficiaryAddress(userId);
-		// console.log("UBI Beneficiary address = " + address);
-		const ubi = new web3.eth.Contract(Wallet.abi, address);
-		const keys = await ubi.methods.getSettlementKeys().call();
+		const address = await controller.getWalletAddress(userId);
+		const walletContract = new web3.eth.Contract(Wallet.abi, address);
+		const keys = await walletContract.methods.getSettlementKeys().call();
 
 		let settles = [];
 		for (let i = 0; i < keys.length; i++) {
-			const settle = await ubi.methods.getSettlementAtKey(keys[i]).call();
+			const settle = await walletContract.methods
+				.getSettlementAtKey(keys[i])
+				.call();
 			settles.push(settle);
 		}
 
 		// console.log(settles);
-		assert(settles.length == 3);
+		assert.equal(settles.length, 1);
 	});
 });

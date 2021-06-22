@@ -9,14 +9,13 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
 import "./interface/IWallet.sol";
-import "./interface/IUBIReconciliationAccount.sol";
 import "./interface/IWalletFactory.sol";
 import "./interface/IVersionedContract.sol";
 
 /**
- * @title Celo UBI administrative contract
+ * @title Controller contract
  *
- * @dev Administrative and orchestrator contract for the Celo UBI program
+ * @dev Administrative and orchestrator contract for local currencies
  *
  * @author Aaron Boyd <https://github.com/aaronmboyd>
  */
@@ -29,53 +28,38 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
     /**
      * @notice Triggered when a new user has been created
      *
-     * @param _userId       Hashed bytes32 of the userId
-     * @param _ubiAddress   Celo address of the UBI Beneficiary
+     * @param _userId           Hashed bytes32 of the userId
+     * @param _walletAddress    Address of the wallet
      */
-    event NewUser(bytes32 indexed _userId, address indexed _ubiAddress);
+    event NewUser(bytes32 indexed _userId, address indexed _walletAddress);
 
     /**
-     * @notice Triggered when the disbursement amount is changed
-     *
-     * @param _disbursementWei   New value of wei to disburse to beneficiaries
-     */
-    event DisbursementUpdated(uint256 indexed _disbursementWei);
-
-    /**
-     * @notice Triggered when the UBI Beneficiary Factory is updated
+     * @notice Triggered when the Wallet Factory is updated
      *
      * @param _oldFactoryAddress   Old factory address
      * @param _newFactoryAddress   New factory address
      */
     event FactoryUpdated(address indexed _oldFactoryAddress, address indexed _newFactoryAddress);
 
-    IERC20 public cUSDToken;
-    ERC20PresetMinterPauser public cUBIAuthToken;
+    IERC20 public erc20Token;
     IWalletFactory public walletFactory;
-    IUBIReconciliationAccount public reconciliationAccount;
 
-    // Default disbursement amount
-    uint256 public disbursementWei = 100 ether;
-
-    // Mapping of UBI Beneficiary identifiers to their contract address
+    // Mapping of Wallet identifiers to their contract address
     EnumerableMap.UintToAddressMap private wallets;
 
     /**
      * @notice Used to initialize a new Controller contract
      *
-     * @param _cUSDToken token used for cUSD
+     * @param _erc20Token token used
      */
     constructor(
-        address _cUSDToken,
-        address _cUBIAuthToken,
-        address _factory,
-        address _custodian
-    ) {
-        cUSDToken = IERC20(_cUSDToken);
-        cUBIAuthToken = ERC20PresetMinterPauser(_cUBIAuthToken);
+        address _erc20Token,
+        address _factory
+    )
+        public
+    {
+        erc20Token = IERC20(_erc20Token);
         walletFactory = IWalletFactory(_factory);
-        address tmp = walletFactory.createProxiedUBIReconciliationAccount(_custodian);
-        reconciliationAccount = IUBIReconciliationAccount(tmp);
     }
 
     /**
@@ -108,7 +92,7 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
      * @notice Enforces value to not be greater than a user's available balance
      */
     modifier balanceAvailable(bytes32 _userId, uint256 _value) {
-        require(balanceOfUBIBeneficiary(_userId) >= _value, "ERR_NO_BALANCE");
+        require(balanceOfWallet(_userId) >= _value, "ERR_NO_BALANCE");
         _;
     }
 
@@ -121,57 +105,38 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
     }
 
     /**
-     * @notice Set amount of wei to disburse to new beneficiaries
-     *
-     * @param _newDisbursementWei   disbursement amount in wei
-     */
-    function setDisbursementWei(uint256 _newDisbursementWei) external onlyOwner {
-        disbursementWei = _newDisbursementWei;
-        emit DisbursementUpdated(disbursementWei);
-    }
-
-    /**
-     * @notice Public update to a new UBI Beneficiary Factory
+     * @notice Public update to a new Wallet Factory
      *
      * @param _newFactoryAddress   new factory address
      */
-    function setUBIBeneficiaryFactory(address _newFactoryAddress) external onlyOwner {
-        _setUBIBeneficiaryFactory(_newFactoryAddress);
+    function setWalletFactory(address _newFactoryAddress) external onlyOwner {
+        _setWalletFactory(_newFactoryAddress);
     }
 
     /**
-     * @notice Internal implementation of update to a new UBI Beneficiary Factory
+     * @notice Internal implementation of update to a new Wallet Factory
      *
      * @param _newFactoryAddress   new factory address
      */
-    function _setUBIBeneficiaryFactory(address _newFactoryAddress) private {
+    function _setWalletFactory(address _newFactoryAddress) private {
         walletFactory = IWalletFactory(_newFactoryAddress);
         emit FactoryUpdated(address(walletFactory), _newFactoryAddress);
     }
 
     /**
-     * @notice Update the custodian address
-     *
-     * @param _custodian   new custodian address
-     */
-    function setCustodian(address _custodian) external onlyOwner {
-        reconciliationAccount.setCustodian(_custodian);
-    }
-
-    /**
-     * @notice Retrieves the available balance of a UBI beneficiary
+     * @notice Retrieves the available balance of a wallet
      *
      * @param _userId user identifier
      * @return uint256 available balance
      */
-    function balanceOfUBIBeneficiary(bytes32 _userId) public view returns (uint256) {
-        address ubiBeneficiaryAddress = wallets.get(uint256(_userId));
-        IWallet user = IWallet(ubiBeneficiaryAddress);
-        return user.availableBalance();
+    function balanceOfWallet(bytes32 _userId) public view returns (uint256) {
+        address walletAddress = wallets.get(uint256(_userId));
+        IWallet wallet = IWallet(walletAddress);
+        return wallet.availableBalance();
     }
 
     /**
-     * @notice Settles an amount for a UBI Beneficiary and transfers to the Reconciliation account
+     * @notice Settles an amount for a wallet and transfers to the wallet contract
      *
      * @param _userId       User identifier
      * @param _txId         Raw transaction ID for this event
@@ -193,7 +158,7 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
     }
 
     /**
-     * @notice Settles an amount for a UBI Beneficiary and transfers to the Reconciliation account
+     * @notice Settles an amount for a wallet and transfers to the wallet contract
      * @dev Implementation of external "settle" function so that it may be called internally without reentrancy guard incrementing
      *
      * @param _userId       User identifier
@@ -205,17 +170,9 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
         string calldata _txId,
         uint256 _value
     ) private {
-        address walletAddress = wallets.get(_userId);
-        IWallet user = IWallet(walletAddress);
-        user.settle(_txId, _value, address(reconciliationAccount));
-    }
-
-    /**
-     * @notice Reconciles cUSD built up in reconciliation account and sends to pre-configured custodian
-     *
-     */
-    function reconcile() external onlyOwner nonReentrant whenNotPaused {
-        reconciliationAccount.reconcile();
+        address tmpWalletAddress = wallets.get(_userId);
+        IWallet user = IWallet(tmpWalletAddress);
+        user.settle(_txId, _value);
     }
 
     /**
@@ -223,28 +180,27 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
      *
      * @param _userId user identifier
      */
-    function newUbiBeneficiary(string calldata _userId)
+    function newWallet(string calldata _userId)
         external
         onlyOwner
         nonReentrant
         whenNotPaused
         userNotExist(keccak256(bytes(_userId)))
     {
-        address newUBIBeneficiaryAddress = walletFactory.createProxiedUBIBeneficiary(_userId);
+        address newWalletAddress = walletFactory.createProxiedWallet(_userId);
         bytes32 key = keccak256(bytes(_userId));
-        wallets.set(uint256(key), newUBIBeneficiaryAddress);
-        cUSDToken.transfer(newUBIBeneficiaryAddress, disbursementWei);
+        wallets.set(uint256(key), newWalletAddress);
 
-        emit NewUser(key, newUBIBeneficiaryAddress);
+        emit NewUser(key, newWalletAddress);
     }
 
     /**
-     * @notice retrieve contract address for a UBI Beneficiary
+     * @notice retrieve contract address for a Wallet
      *
      * @param _userId user identifier
      * @return address of user's contract
      */
-    function beneficiaryAddress(bytes32 _userId) public view returns (address) {
+    function getWalletAddress(bytes32 _userId) public view returns (address) {
         return wallets.get(uint256(_userId), "ERR_USER_NOT_EXIST");
     }
 
@@ -252,7 +208,7 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
      * @notice Transfers ownership of the contract to a new account (`newOwner`).
      * Can only be called by the current owner.
      *
-     * @dev In this override, we iterate all the existing UBIBeneficiary contracts
+     * @dev In this override, we iterate all the existing Wallet contracts
      * and change their owner before changing the owner of the core contract
      *
      * @param newOwner new owner of this contract
@@ -260,50 +216,36 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
      *
      */
     function transferOwnership(address newOwner) public override onlyOwner {
-        // 1 Update owner on all UBIBeneficiary contracts
+        // 1 Update owner on all Wallet contracts
         uint256 i;
         for (i = 0; i < wallets.length(); i = i.add(1)) {
-            address ubiBeneficiaryAddress;
+            address walletAddress;
 
             // .at function returns a tuple of (uint256, address)
-            (, ubiBeneficiaryAddress) = wallets.at(i);
+            (, walletAddress) = wallets.at(i);
 
-            IWallet user = IWallet(ubiBeneficiaryAddress);
+            IWallet user = IWallet(walletAddress);
             user.transferController(newOwner);
         }
 
-        // 2 Update reconciliation account owner, cast it as a
-        //      IUBIBeneficiary to use the transferController function
-        IWallet(address(reconciliationAccount)).transferController(newOwner);
-
-        // 3 Update owner of this contract
+        // 2 Update owner of this contract
         super.transferOwnership(newOwner);
     }
 
     /**
      * @notice Update implementation address for beneficiaries
      *
-     * @param _newLogic New implementation logic for beneficiary proxies
+     * @param _newLogic New implementation logic for wallet proxies
      *
      */
-    function updateBeneficiaryImplementation(address _newLogic) external onlyOwner {
+    function updateWalletImplementation(address _newLogic) external onlyOwner {
         uint256 i;
         for (i = 0; i < wallets.length(); i = i.add(1)) {
-            address ubiBeneficiaryAddress;
+            address walletAddress;
             // .at function returns a tuple of (uint256, address)
-            (, ubiBeneficiaryAddress) = wallets.at(i);
-            walletFactory.updateProxyImplementation(ubiBeneficiaryAddress, _newLogic);
+            (, walletAddress) = wallets.at(i);
+            walletFactory.updateProxyImplementation(walletAddress, _newLogic);
         }
-    }
-
-    /**
-     * @notice Update implementation address for reconciliationAccount
-     *
-     * @param _newLogic New implementation logic for reconciliationAccount
-     *
-     */
-    function updateReconciliationImplementation(address _newLogic) external onlyOwner {
-        walletFactory.updateProxyImplementation(address(reconciliationAccount), _newLogic);
     }
 
     /**
@@ -324,47 +266,36 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
         _unpause();
     }
 
-    /**
-     * @notice Emergency withdrawal of all remaining cUSD to the custodian account
-     *
-     * @dev The contract must be paused
-     * @dev Sends cUSD to current custodian from the current reconciliation account
-     */
-    function withdrawToCustodian() external onlyOwner whenPaused nonReentrant {
-        uint256 balanceOf = cUSDToken.balanceOf(address(this));
-        address custodian = reconciliationAccount.getCustodian();
-        cUSDToken.transfer(custodian, balanceOf);
-    }
 
     /**
-     * @notice Emergency withdrawal of all remaining cUSD to the owner account
+     * @notice Emergency withdrawal of all remaining token to the owner account
      *
      * @dev The contract must be paused
-     * @dev Sends cUSD to current owner
+     * @dev Sends erc20 to current owner
      */
     function withdrawToOwner() external onlyOwner whenPaused nonReentrant {
-        uint256 balanceOf = cUSDToken.balanceOf(address(this));
-        cUSDToken.transfer(owner(), balanceOf);
+        uint256 balanceOf = erc20Token.balanceOf(address(this));
+        erc20Token.transfer(owner(), balanceOf);
     }
 
     /**
-     * @notice Get beneficiary address at index
+     * @notice Get wallet address at index
      * @dev Used for iterating the complete list of beneficiaries
      *
      */
-    function getBeneficiaryAddressAtIndex(uint256 _index) external view returns (address) {
+    function getWalletAddressAtIndex(uint256 _index) external view returns (address) {
         // .at function returns a tuple of (uint256, address)
-        address ubiBeneficiaryAddress;
-        (, ubiBeneficiaryAddress) = wallets.at(_index);
+        address walletAddress;
+        (, walletAddress) = wallets.at(_index);
 
-        return ubiBeneficiaryAddress;
+        return walletAddress;
     }
 
     /**
      * @notice Get count of beneficiaries
      *
      */
-    function getBeneficiaryCount() external view returns (uint256) {
+    function getWalletCount() external view returns (uint256) {
         return wallets.length();
     }
 }

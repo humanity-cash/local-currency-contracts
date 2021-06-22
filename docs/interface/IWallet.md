@@ -7,9 +7,9 @@ A simple wallet contract to hold specific ERC20 tokens that is controlled by an 
 
 
 
-### `initialize(address _cUSDToken, address _cUBIAuthToken, address _controller, string _userId)` (external)
+### `initialize(address _erc20token, address _controller, string _userId)` (external)
 
-Used to initialize a new UBIBeneficiary contract
+Used to initialize a new Wallet contract
 
 
 
@@ -40,9 +40,9 @@ retrieve available balance for this contract
 
 
 
-### `settle(string _txId, uint256 _value, address _reconciliationAccount)` (external)
+### `settle(string _txId, uint256 _value)` (external)
 
-Perform a settlement by returning cUSD token to the reconciliation contract
+Perform a settlement by returning token to the wallet contract
 
 
 
@@ -51,14 +51,14 @@ If there was an existing authorization for this txId, de-authorize it, for the o
 
 ### `transferController(address _newController)` (external)
 
-Transfer control of the UBIBeneficiary
+Transfer control of the controller
 
 
 
 
 
 
-### `SettlementEvent(bytes32 _userId, address _ubiAddress, string _txId, uint256 _amt)`
+### `SettlementEvent(bytes32 _userId, address _walletAddress, string _txId, uint256 _amt)`
 
 Triggered when an amount has been settled for a user
 

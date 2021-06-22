@@ -11,7 +11,7 @@ import "./interface/IWallet.sol";
 import "./interface/IVersionedContract.sol";
 
 /**
- * @title Implementation of Celo UBI beneficiary contract
+ * @title Implementation of the Wallet contract
  *
  * @dev A simple wallet contract to hold specific ERC20 tokens that is controlled by an owner
  *
@@ -28,8 +28,7 @@ contract Wallet is
     using SafeERC20 for IERC20;
     using SafeERC20 for ERC20PresetMinterPauser;
 
-    IERC20 public cUSDToken;
-    ERC20PresetMinterPauser public cUBIAuthToken;
+    IERC20 public erc20Token;
     uint256 public createdBlock;
     string public userId;
 
@@ -40,6 +39,7 @@ contract Wallet is
         uint256 value;
         string txId;
     }
+
     mapping(bytes32 => Settlement) private settlements;
     bytes32[] private settlementKeys;
 
@@ -71,32 +71,18 @@ contract Wallet is
     }
 
     /**
-     * @notice Enforces only factory or controller can perform action
-     */
-    modifier onlyFactoryOrController(address operator) {
-        require(
-            hasRole(FACTORY_ROLE, operator) || hasRole(CONTROLLER_ROLE, operator),
-            "ERR_ONLY_FACTORY_OR_CONTROLLER"
-        );
-        _;
-    }
-
-    /**
-     * @notice used to initialize a new UBIBeneficiary contract
+     * @notice used to initialize a new Wallet contract
      *
-     * @param _cUSDToken token used for cUSD
-     * @param _cUBIAuthToken token used for cUSD authorizations
+     * @param _erc20Token token used
      * @param _controller Address of the controller contract
-     * @param _userId userId for the UBI beneficiary
+     * @param _userId userId for the wallet
      */
     function initialize(
-        address _cUSDToken,
-        address _cUBIAuthToken,
+        address _erc20Token,
         address _controller,
         string memory _userId
     ) external override initializer {
-        cUSDToken = IERC20(_cUSDToken);
-        cUBIAuthToken = ERC20PresetMinterPauser(_cUBIAuthToken);
+        erc20Token = IERC20(_erc20Token);
         createdBlock = block.number;
         userId = _userId;
 
@@ -137,42 +123,37 @@ contract Wallet is
      * @return uint256 usable balance for this contract
      */
     function availableBalance() external view override returns (uint256) {
-        uint256 cUSDBalance = cUSDToken.balanceOf(address(this));
-        uint256 cAuthBalance = cUBIAuthToken.balanceOf(address(this));
-        return cUSDBalance.sub(cAuthBalance);
+        return erc20Token.balanceOf(address(this));
     }
 
 
     /**
-     * @notice Perform a settlement by returning cUSD token to the reconciliation contract
+     * @notice Perform a settlement by returning token to the wallet contract
      *
      * @param _txId Dynamic string txId of the transaction to authorize
      * @param _value uint256 transaction amount
-     * @param _reconciliationAccount Reconciliation account to send the cUSD to during settlement
      *
      * @dev If there was an existing authorization for this txId, de-authorize it, for the original authorization amount, regardless of the current settlement amount
      *
      */
     function settle(
         string calldata _txId,
-        uint256 _value,
-        address _reconciliationAccount
+        uint256 _value
     ) external override onlyController(msg.sender) nonReentrant {
         bytes32 key = keccak256(bytes(_txId));
         require(settlements[key].value == 0, "ERR_SETTLE_EXISTS");
 
-        // Then peform settlement
+        // Then perform settlement
         settlementKeys.push(key);
         Settlement storage newSettle = settlements[key];
         newSettle.txId = _txId;
         newSettle.value = _value;
-        cUSDToken.transfer(_reconciliationAccount, _value);
 
         emit SettlementEvent(keccak256(bytes(userId)), address(this), _txId, _value);
     }
 
     /**
-     * @notice Transfer control of the UBIBeneficiary
+     * @notice Transfer control of the controller
      *
      * @param _newController New owner address
      *

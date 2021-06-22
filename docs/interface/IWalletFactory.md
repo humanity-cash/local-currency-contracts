@@ -5,17 +5,9 @@
 
 
 
-### `createProxiedUBIBeneficiary(string _userId) → address` (external)
+### `createProxiedWallet(string _userId) → address` (external)
 
-Create a new UBI Beneficiary proxy contract
-
-
-
-
-
-### `createProxiedUBIReconciliationAccount(address _custodian) → address` (external)
-
-Create a new UBI Reconciliation proxy contract
+Create a new Wallet proxy contract
 
 
 
@@ -30,17 +22,9 @@ Update proxy implementation address
 
 
 
-### `UBIBeneficiaryCreated(address _newUBIBeneficiaryAddress)`
+### `WalletCreated(address _newWalletAddress)`
 
-Triggered when a new UBIBeneficiary has been created
-
-
-
-
-
-### `UBIReconciliationAccountCreated(address _newUBIReconciliationAccountAddress)`
-
-Triggered when a new UBIReconciliationAccount has been created
+Triggered when a new Wallet has been created
 
 
 

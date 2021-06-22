@@ -3,39 +3,24 @@ pragma solidity ^0.8.0;
 
 interface IWalletFactory {
     /**
-     * @notice Triggered when a new UBIBeneficiary has been created
+     * @notice Triggered when a new Wallet has been created
      *
-     * @param _newUBIBeneficiaryAddress   Celo address of the UBI Beneficiary
+     * @param _newWalletAddress   Address of the Wallet
      */
-    event UBIBeneficiaryCreated(address _newUBIBeneficiaryAddress);
+    event WalletCreated(address _newWalletAddress);
 
     /**
-     * @notice Triggered when a new UBIReconciliationAccount has been created
+     * @notice Create a new Wallet proxy contract
      *
-     * @param _newUBIReconciliationAccountAddress   Celo address of the UBI Reconciliation Account
-     */
-    event UBIReconciliationAccountCreated(address _newUBIReconciliationAccountAddress);
-
-    /**
-     * @notice Create a new UBI Beneficiary proxy contract
-     *
-     * @param _userId UserId of the new beneficiary
+     * @param _userId UserId of the new wallet
      *
      */
-    function createProxiedUBIBeneficiary(string memory _userId) external returns (address);
-
-    /**
-     * @notice Create a new UBI Reconciliation proxy contract
-     *
-     * @param _custodian Address of the custodian target address
-     *
-     */
-    function createProxiedUBIReconciliationAccount(address _custodian) external returns (address);
+    function createProxiedWallet(string memory _userId) external returns (address);
 
     /**
      * @notice Update proxy implementation address
      *
-     * @param _proxy Address of either a UBIBeneficiary or ReconciliationAccount proxy
+     * @param _proxy Address of a Wallet proxy
      * @param _newLogic Address of new implementation contract
      *
      */

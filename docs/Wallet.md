@@ -12,12 +12,6 @@ Enforces only controller can perform action
 
 
 
-### `onlyFactoryOrController(address operator)`
-
-Enforces only factory or controller can perform action
-
-
-
 
 ### `getVersionNumber() → uint256, uint256, uint256, uint256` (external)
 
@@ -26,9 +20,9 @@ Returns the storage, major, minor, and patch version of the contract.
 
 
 
-### `initialize(address _cUSDToken, address _cUBIAuthToken, address _controller, string _userId)` (external)
+### `initialize(address _erc20Token, address _controller, string _userId)` (external)
 
-used to initialize a new UBIBeneficiary contract
+used to initialize a new Wallet contract
 
 
 
@@ -59,9 +53,9 @@ retrieve available balance for this contract
 
 
 
-### `settle(string _txId, uint256 _value, address _reconciliationAccount)` (external)
+### `settle(string _txId, uint256 _value)` (external)
 
-Perform a settlement by returning cUSD token to the reconciliation contract
+Perform a settlement by returning token to the wallet contract
 
 
 
@@ -70,7 +64,7 @@ If there was an existing authorization for this txId, de-authorize it, for the o
 
 ### `transferController(address _newController)` (external)
 
-Transfer control of the UBIBeneficiary
+Transfer control of the controller
 
 
 

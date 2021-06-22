@@ -1,17 +1,15 @@
-const Controller = artifacts.require("Controller");
-const WalletFactory = artifacts.require("WalletFactory");
-const Wallet = artifacts.require("Wallet");
-const UBIReconciliationAccount = artifacts.require("UBIReconciliationAccount");
 const truffleAssert = require("truffle-assertions");
+const { deploy } = require("./deploy");
 
 contract("Versions", async (accounts) => {
-	let controller, factory, wallet, reconciler;
+	let controller, factory, wallet;
 
 	before(async () => {
-		wallet = await Wallet.deployed();
-		reconciler = await UBIReconciliationAccount.deployed();
-		controller = await Controller.deployed();
-		factory = await WalletFactory.deployed();
+		let deployment = await deploy();
+
+		wallet = deployment.wallet;
+		controller = deployment.controller;
+		factory = deployment.factory;
 	});
 
 	it("Should read version numbers of all deployed contracts", async () => {
@@ -29,11 +27,6 @@ contract("Versions", async (accounts) => {
 			console.log(
 				`Wallet version: ${JSON.stringify(
 					await wallet.getVersionNumber()
-				)}`
-			),
-			console.log(
-				`UBIReconciliationAccount version: ${JSON.stringify(
-					await reconciler.getVersionNumber()
 				)}`
 			),
 			"All version numbers should be retrieved"

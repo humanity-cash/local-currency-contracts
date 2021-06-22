@@ -1,7 +1,6 @@
 const Migrations = artifacts.require("Migrations");
 const Controller = artifacts.require("Controller");
 const Wallet = artifacts.require("Wallet");
-const UBIReconciliationAccount = artifacts.require("UBIReconciliationAccount");
 const WalletFactory = artifacts.require("WalletFactory");
 const ERC20 = artifacts.require("ERC20PresetMinterPauser");
 const config = require("./config.json");
@@ -16,64 +15,41 @@ module.exports = (deployer, network, accounts) => {
 	let configToUse = config[`${network}`];
 	if (!configToUse) configToUse = config["development"];
 
-	let factory, controller, reconciliationLogic, cUBIAuthToken, cUSDFake;
+	let factory, controller, fakeToken;
 
 	// Deploy logic/implementation contracts
-	deployer.deploy(Wallet).then(async (ubiLogic) => {
-		reconciliationLogic = await deployer.deploy(UBIReconciliationAccount);
-
-		// Deploy new ERC20 for auth token
-		cUBIAuthToken = await deployer.deploy(
-			ERC20,
-			"Celo UBI Authorization Token",
-			"cUBIAUTH"
-		);
-
-		// If we are local, create a fake cUSD (there wont be one deployed here)
-		let cUSDToUse = configToUse.cUSDToken;
+	deployer.deploy(Wallet).then(async (wallet) => {
+		// If we are local, create a fake token
+		let tokenToUse = configToUse.token;
 		if (network === "local") {
-			cUSDFake = await deployer.deploy(ERC20, "cUSD", "cUSD");
-			cUSDToUse = cUSDFake.address;
+			fakeToken = await deployer.deploy(ERC20, "TestToken", "TT");
+			tokenToUse = fakeToken.address;
 		}
 
 		// Deploy factory
 		factory = await deployer.deploy(
 			WalletFactory,
-			ubiLogic.address,
-			reconciliationLogic.address,
-			cUSDToUse,
-			cUBIAuthToken.address
+			wallet.address,
+			tokenToUse
 		);
 
 		// Deploy controller
 		controller = await deployer.deploy(
 			Controller,
-			cUSDToUse,
-			cUBIAuthToken.address,
-			factory.address,
-			configToUse.custodianAccount
+			tokenToUse,
+			factory.address
 		);
 
 		// Make controller own factory
 		await factory.transferOwnership(controller.address);
 
-		// If we are local, mint some fake cUSD to play with for the controller
+		// If we are local, mint some fake token to play with for the controller
 		if (network === "local") {
-			await cUSDFake.mint(
+			await fakeToken.mint(
 				controller.address,
 				utils.toWei("10000000", "ether")
 			);
 		}
-
-		// Make controller minter/admin of cUBIAuth
-		await cUBIAuthToken.grantRole(
-			utils.keccak256("DEFAULT_ADMIN_ROLE"),
-			controller.address
-		);
-		await cUBIAuthToken.grantRole(
-			utils.keccak256("MINTER_ROLE"),
-			controller.address
-		);
 
 		// Give ownership of controller to the operational account
 		await controller.transferOwnership(configToUse.initialOwner);
