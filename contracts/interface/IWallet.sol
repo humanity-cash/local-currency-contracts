@@ -27,7 +27,7 @@ interface IWallet {
     /**
      * @notice Used to initialize a new Wallet contract
      *
-     * @param _erc20token token used ie. cUSD
+     * @param _erc20token token used
      * @param _userId userId for the wallet
      *
      */
@@ -62,7 +62,7 @@ interface IWallet {
     function availableBalance() external view returns (uint256);
 
     /**
-     * @notice Perform a settlement by returning cUSD token to the wallet contract
+     * @notice Perform a settlement by returning token to the wallet contract
      *
      * @param _txId Dynamic string txId of the transaction to authorize
      * @param _value uint256 transaction amount

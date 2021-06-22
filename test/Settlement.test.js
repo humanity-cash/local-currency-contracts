@@ -5,20 +5,20 @@ const { deploy } = require("./deploy");
 const { uuid } = require("uuidv4");
 
 contract("Settlement", async (accounts) => {
-	let controller, factory, cUSDTestToken, userId;
+	let controller, factory, testToken, userId;
 
 	before(async () => {
 		let deployment = await deploy();
 
 		controller = deployment.controller;
 		factory = deployment.factory;
-		cUSDTestToken = deployment.cUSDTestToken;
+		testToken = deployment.testToken
 
 		userId = uuid();
 		await controller.newWallet(userId);
 		userId = Web3.utils.keccak256(userId);
 
-		await cUSDTestToken.mint(
+		await testToken.mint(
 			await controller.getWalletAddress(userId),
 			Web3.utils.toWei("100", "ether")
 		);
@@ -33,7 +33,7 @@ contract("Settlement", async (accounts) => {
 		assert.equal(
 			balance.toString(),
 			expected,
-			`cUSD Balance of wallet should be ${expected}`
+			`token Balance of wallet should be ${expected}`
 		);
 	});
 

@@ -73,7 +73,7 @@ contract Wallet is
     /**
      * @notice used to initialize a new Wallet contract
      *
-     * @param _erc20Token token used ie. cUSD
+     * @param _erc20Token token used
      * @param _controller Address of the controller contract
      * @param _userId userId for the wallet
      */
@@ -128,7 +128,7 @@ contract Wallet is
 
 
     /**
-     * @notice Perform a settlement by returning cUSD token to the wallet contract
+     * @notice Perform a settlement by returning token to the wallet contract
      *
      * @param _txId Dynamic string txId of the transaction to authorize
      * @param _value uint256 transaction amount

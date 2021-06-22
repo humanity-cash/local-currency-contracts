@@ -4,23 +4,22 @@ const { deploy } = require("./deploy");
 const { uuid } = require("uuidv4");
 
 contract("User Management", async (accounts) => {
-	let controller, cUSDMinted, user1, factory, cUSDTestToken, cUBIAuthToken;
+	let controller, tokenMinted, user1, factory, testToken;
 
 	before(async () => {
 		let deployment = await deploy();
 
 		controller = deployment.controller;
 		factory = deployment.factory;
-		cUSDTestToken = deployment.cUSDTestToken;
-		cUBIAuthToken = deployment.cUBIAuthToken;
+		testToken = deployment.testToken;
 
-		cUSDMinted = await cUSDTestToken.balanceOf(controller.address);
+		tokenMinted = await testToken.balanceOf(controller.address);
 		user1 = uuid();
 		await controller.newWallet(user1);
 	});
 
-	it("Should verify Controller contract has cUSD balance", async () => {
-		const balance = await cUSDTestToken.balanceOf(controller.address);
+	it("Should verify Controller contract has token balance", async () => {
+		const balance = await testToken.balanceOf(controller.address);
 		assert(balance > 0);
 	});
 

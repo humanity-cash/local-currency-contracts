@@ -118,7 +118,7 @@ Requirements: The contract must be paused.
 
 ### `withdrawToOwner()` (external)
 
-Emergency withdrawal of all remaining cUSD to the owner account
+Emergency withdrawal of all remaining token to the owner account
 
 
 

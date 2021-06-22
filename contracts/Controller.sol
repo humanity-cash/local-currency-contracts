@@ -50,7 +50,7 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
     /**
      * @notice Used to initialize a new Controller contract
      *
-     * @param _erc20Token token used ie. cUSD
+     * @param _erc20Token token used
      */
     constructor(
         address _erc20Token,
@@ -266,7 +266,7 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
 
 
     /**
-     * @notice Emergency withdrawal of all remaining cUSD to the owner account
+     * @notice Emergency withdrawal of all remaining token to the owner account
      *
      * @dev The contract must be paused
      * @dev Sends erc20 to current owner

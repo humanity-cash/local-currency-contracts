@@ -5,19 +5,19 @@ const ERC20 = artifacts.require("ERC20PresetMinterPauser");
 const Wallet = artifacts.require("Wallet");
 
 module.exports.deploy = async () => {
-	let controller, factory, cUSDTestToken, cUBIAuthToken;
+	let controller, factory, testToken;
 
-	cUSDTestToken = await ERC20.new("cUSD", "cUSD");
+	testToken = await ERC20.new("TestToken", "TT");
 
 	let wallet = await Wallet.deployed();
 
-	factory = await WalletFactory.new(wallet.address, cUSDTestToken.address);
+	factory = await WalletFactory.new(wallet.address, testToken.address);
 
-	controller = await Controller.new(cUSDTestToken.address, factory.address);
+	controller = await Controller.new(testToken.address, factory.address);
 
 	await factory.transferOwnership(controller.address);
 
-	await cUSDTestToken.mint(
+	await testToken.mint(
 		controller.address,
 		Web3.utils.toWei("10000000", "ether")
 	);
@@ -26,6 +26,6 @@ module.exports.deploy = async () => {
 		wallet,
 		controller,
 		factory,
-		cUSDTestToken,
+		testToken,
 	};
 };

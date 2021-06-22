@@ -12,12 +12,6 @@ Enforces only controller can perform action
 
 
 
-### `onlyFactoryOrController(address operator)`
-
-Enforces only factory or controller can perform action
-
-
-
 
 ### `getVersionNumber() → uint256, uint256, uint256, uint256` (external)
 
@@ -61,7 +55,7 @@ retrieve available balance for this contract
 
 ### `settle(string _txId, uint256 _value)` (external)
 
-Perform a settlement by returning cUSD token to the wallet contract
+Perform a settlement by returning token to the wallet contract
 
 
 

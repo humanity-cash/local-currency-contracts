@@ -15,37 +15,37 @@ module.exports = (deployer, network, accounts) => {
 	let configToUse = config[`${network}`];
 	if (!configToUse) configToUse = config["development"];
 
-	let factory, controller, cUSDFake;
+	let factory, controller, fakeToken;
 
 	// Deploy logic/implementation contracts
 	deployer.deploy(Wallet).then(async (wallet) => {
-		// If we are local, create a fake cUSD (there wont be one deployed here)
-		let cUSDToUse = configToUse.cUSDToken;
+		// If we are local, create a fake token
+		let tokenToUse = configToUse.token;
 		if (network === "local") {
-			cUSDFake = await deployer.deploy(ERC20, "cUSD", "cUSD");
-			cUSDToUse = cUSDFake.address;
+			fakeToken = await deployer.deploy(ERC20, "TestToken", "TT");
+			tokenToUse = fakeToken.address;
 		}
 
 		// Deploy factory
 		factory = await deployer.deploy(
 			WalletFactory,
 			wallet.address,
-			cUSDToUse
+			tokenToUse
 		);
 
 		// Deploy controller
 		controller = await deployer.deploy(
 			Controller,
-			cUSDToUse,
+			tokenToUse,
 			factory.address
 		);
 
 		// Make controller own factory
 		await factory.transferOwnership(controller.address);
 
-		// If we are local, mint some fake cUSD to play with for the controller
+		// If we are local, mint some fake token to play with for the controller
 		if (network === "local") {
-			await cUSDFake.mint(
+			await fakeToken.mint(
 				controller.address,
 				utils.toWei("10000000", "ether")
 			);

@@ -8,7 +8,7 @@ const { uuid } = require("uuidv4");
 contract("Controller", async (accounts) => {
 	const owner = accounts[0];
 
-	let controller, factory, cUSDTestToken, wallet;
+	let controller, factory, testToken, wallet;
 
 	before(async () => {
 		let deployment = await deploy();
@@ -16,12 +16,12 @@ contract("Controller", async (accounts) => {
 		wallet = deployment.wallet;
 		controller = deployment.controller;
 		factory = deployment.factory;
-		cUSDTestToken = deployment.cUSDTestToken;
+		testToken = deployment.testToken;
 	});
 
 	it("Should read public attributes for important internal addresses", async () => {
-		const cUSDToken = await controller.erc20Token();
-		assert(cUSDToken);
+		const token = await controller.erc20Token();
+		assert(token);
 	});
 
 	it("Should have an owner matching the deployer address", async () => {
@@ -53,7 +53,7 @@ contract("Controller", async (accounts) => {
 	it("Should be able to update the factory and create a new user", async () => {
 		const newFactory = await WalletFactory.new(
 			wallet.address,
-			cUSDTestToken.address
+			testToken.address
 		);
 		await controller.setWalletFactory(newFactory.address);
 		await controller.newWallet(uuid());
@@ -64,20 +64,20 @@ contract("Controller", async (accounts) => {
 		await controller.withdrawToOwner();
 		await controller.unpause();
 
-		const controllerBalanceOfNew = await cUSDTestToken.balanceOf(
+		const controllerBalanceOfNew = await testToken.balanceOf(
 			controller.address
 		);
 
 		assert.equal(
 			controllerBalanceOfNew,
 			0,
-			`Walllet cUSD balance should be ${0}`
+			`Walllet token balance should be ${0}`
 		);
 	});
 
 	it("Should be able to transfer ownership", async () => {
-		// Re-mint some cUSD test token to continue testing
-		await cUSDTestToken.mint(
+		// Re-mint some test token to continue testing
+		await testToken.mint(
 			controller.address,
 			Web3.utils.toWei("10000000", "ether")
 		);
