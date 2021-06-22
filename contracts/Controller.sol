@@ -55,7 +55,9 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
     constructor(
         address _erc20Token,
         address _factory
-    ) {
+    )
+        public
+    {
         erc20Token = IERC20(_erc20Token);
         walletFactory = IWalletFactory(_factory);
     }
