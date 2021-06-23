@@ -3,9 +3,14 @@ const Wallet = artifacts.require("Wallet");
 const Web3 = require("web3");
 const truffleAssert = require("truffle-assertions");
 const { deploy } = require("./deploy");
+const Web3Utils = require('web3-utils');
 const { uuid } = require("uuidv4");
 
-contract("Controller", async (accounts) => {
+function toBytes32(input) {
+  return Web3Utils.keccak256(input);
+}
+
+contract.only("Controller", async (accounts) => {
 	const owner = accounts[0];
 
 	let controller, factory, testToken, wallet;
@@ -75,7 +80,7 @@ contract("Controller", async (accounts) => {
 		);
 	});
 
-	it("Should be able to transfer ownership", async () => {
+	it.only("Should be able to transfer ownership", async () => {
 		// Re-mint some test token to continue testing
 		await testToken.mint(
 			controller.address,
@@ -88,8 +93,11 @@ contract("Controller", async (accounts) => {
 		await controller.newWallet(user1);
 		await controller.newWallet(user2);
 		await controller.newWallet(user3);
+		await controller.transferWalletOwnership(accounts[1], toBytes32(user3));
+		await controller.transferWalletOwnership(accounts[1], toBytes32(user2));
+		await controller.transferWalletOwnership(accounts[1], toBytes32(user1));
 
-		await controller.transferOwnership(accounts[1]);
+		await controller.transferContractOwnership(accounts[1]);
 		const contractOwner = await controller.owner();
 		assert.equal(
 			accounts[1],
