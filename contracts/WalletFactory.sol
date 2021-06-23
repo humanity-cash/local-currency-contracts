@@ -24,7 +24,6 @@ contract WalletFactory is IVersionedContract, IWalletFactory, Ownable {
         IWallet _wallet,
         IERC20 _erc20Token
     )
-        public
     {
         proxyAdmin = new ProxyAdmin();
         erc20Token = _erc20Token;
