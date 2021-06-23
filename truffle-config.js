@@ -7,7 +7,7 @@ const getMnemonic = (network) => {
 	return process.env.MNEMONIC;
 };
 
-// celos derivation path!
+// celo's derivation path!
 const celoDerivationPath = "m/44'/52752'/0'/0/";
 
 module.exports = {
