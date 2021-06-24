@@ -199,7 +199,6 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
 		* @param _userId user identifier
 		* @return address of user's contract
 		*/
-
 	function getWalletAddress(bytes32 _userId) public view returns (address) {
 		return wallets.get(uint256(_userId), "ERR_USER_NOT_EXIST");
 	}
