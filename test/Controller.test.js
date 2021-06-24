@@ -10,7 +10,7 @@ function toBytes32(input) {
 	return Web3Utils.keccak256(input);
 }
 
-contract.only("Controller", async (accounts) => {
+contract("Controller", async (accounts) => {
 	const owner = accounts[0];
 
 	let controller, factory, testToken, wallet;
@@ -80,7 +80,7 @@ contract.only("Controller", async (accounts) => {
 		);
 	});
 
-	it.only("Should be able to transfer ownership", async () => {
+	it("Should be able to transfer ownership", async () => {
 		// Re-mint some test token to continue testing
 		await testToken.mint(
 			controller.address,
