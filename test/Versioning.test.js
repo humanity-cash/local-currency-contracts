@@ -2,14 +2,14 @@ const truffleAssert = require("truffle-assertions");
 const { deploy } = require("./deploy");
 
 contract("Versions", async (accounts) => {
-	let controller, factory, wallet;
+	let controller, walletFactory, wallet;
 
 	before(async () => {
 		let deployment = await deploy();
 
 		wallet = deployment.wallet;
 		controller = deployment.controller;
-		factory = deployment.factory;
+		walletFactory = deployment.walletFactory;
 	});
 
 	it("Should read version numbers of all deployed contracts", async () => {
@@ -21,7 +21,7 @@ contract("Versions", async (accounts) => {
 			),
 			console.log(
 				`Factory version: ${JSON.stringify(
-					await factory.getVersionNumber()
+					await walletFactory.getVersionNumber()
 				)}`
 			),
 			console.log(

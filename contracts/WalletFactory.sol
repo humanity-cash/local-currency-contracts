@@ -21,13 +21,13 @@ contract WalletFactory is IVersionedContract, IWalletFactory, Ownable {
      *
      */
     constructor(
-        IWallet _wallet,
-        IERC20 _erc20Token
+        address _erc20Token,
+        address _wallet
     )
     {
         proxyAdmin = new ProxyAdmin();
-        erc20Token = _erc20Token;
-        wallet = _wallet;
+        erc20Token = IERC20(_erc20Token);
+        wallet = IWallet(_wallet);
     }
 
     /**
@@ -59,6 +59,10 @@ contract WalletFactory is IVersionedContract, IWalletFactory, Ownable {
         override
         returns (address)
     {
+        require(bytes(_userId).length > 0, "ERR_NO_USER_ID");
+        require(address(wallet) != address(0), "ERR_NO_WALLET");
+        require(address(proxyAdmin) != address(0), "ERR_NO_PROXY_ADMIN");
+
         TransparentUpgradeableProxy proxy =
         new TransparentUpgradeableProxy(
             address(wallet),
@@ -70,8 +74,12 @@ contract WalletFactory is IVersionedContract, IWalletFactory, Ownable {
                 _userId
             )
         );
-        emit WalletCreated(address(proxy));
-        return address(proxy);
+
+        address proxyAddress = address(proxy);
+        require(proxyAddress != address(0), "ERR_NO_PROXY");
+
+        emit WalletCreated(proxyAddress);
+        return proxyAddress;
     }
 
     /**
