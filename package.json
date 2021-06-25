@@ -26,7 +26,7 @@
     "coverage": "truffle run coverage",
     "doc": "solidity-docgen --solc-module solc-0.8.4 --exclude ./contracts/test/,./contracts/truffle/",
     "export": "node ./scripts/export.js",
-    "clean": "rm -rf ./build/ ./coverage/ coverage.json",
+    "clean": "rm -rf ./build/ ./artifacts/ ./coverage/ coverage.json",
     "prettier": "prettier --write ./contracts/**/**/*.sol ./test/**/**/*.js",
     "lint": "yarn lint:sol",
     "lint:sol": "solhint contracts/**/*.sol contracts/*.sol",
