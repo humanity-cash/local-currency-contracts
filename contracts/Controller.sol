@@ -207,28 +207,27 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
      * @notice Transfers ownership of the contract to a new account (`newOwner`).
      * Can only be called by the current owner.
      *
-     * @dev In this override, we iterate all the existing Wallet contracts
-     * and change their owner before changing the owner of the core contract
      *
      * @param newOwner new owner of this contract
-     * @inheritdoc Ownable
      *
      */
-    function transferOwnership(address newOwner) public override onlyOwner {
-        // 1 Update owner on all Wallet contracts
-        uint256 i;
-        for (i = 0; i < wallets.length(); i = i.add(1)) {
-            address walletAddress;
-
-            // .at function returns a tuple of (uint256, address)
-            (, walletAddress) = wallets.at(i);
-
-            IWallet user = IWallet(walletAddress);
-            user.transferController(newOwner);
-        }
-
-        // 2 Update owner of this contract
+    function transferContractOwnership(address newOwner) public onlyOwner {
         super.transferOwnership(newOwner);
+    }
+
+    /**
+     * @notice Transfers ownership of the wallet to a new account (`newOwner`).
+     * Can only be called by the current owner.
+     *
+     *
+     * @param newOwner new owner of wallet
+     * @param userId current owner of the wallet
+     *
+     */
+    function transferWalletOwnership(address newOwner, bytes32 userId) public onlyOwner {
+        address walletAddress = getWalletAddress(userId);
+        IWallet user = IWallet(walletAddress);
+        user.transferController(newOwner);
     }
 
     /**

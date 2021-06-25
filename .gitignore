@@ -118,3 +118,5 @@ ganache-cli.log
 
 docs/ABDKMath64x64.md
 artifacts/
+
+*.swp
