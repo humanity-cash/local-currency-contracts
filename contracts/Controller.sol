@@ -209,7 +209,6 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
      *
      *
      * @param newOwner new owner of this contract
-     * @inheritdoc Ownable
      *
      */
     function transferContractOwnership(address newOwner) public onlyOwner {
@@ -223,7 +222,6 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
      *
      * @param newOwner new owner of wallet
      * @param userId current owner of the wallet
-     * @inheritdoc Ownable
      *
      */
     function transferWalletOwnership(address newOwner, bytes32 userId) public onlyOwner {
