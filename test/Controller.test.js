@@ -13,14 +13,14 @@ function toBytes32(input) {
 contract("Controller", async (accounts) => {
 	const owner = accounts[0];
 
-	let controller, factory, testToken, wallet;
+	let controller, walletFactory, testToken, wallet;
 
 	before(async () => {
 		let deployment = await deploy();
 
 		wallet = deployment.wallet;
 		controller = deployment.controller;
-		factory = deployment.factory;
+		walletFactory = deployment.walletFactory;
 		testToken = deployment.testToken;
 	});
 
@@ -57,8 +57,8 @@ contract("Controller", async (accounts) => {
 
 	it("Should be able to update the factory and create a new user", async () => {
 		const newFactory = await WalletFactory.new(
-			wallet.address,
-			testToken.address
+			testToken.address,
+			wallet.address
 		);
 		await controller.setWalletFactory(newFactory.address);
 		await controller.newWallet(uuid());
