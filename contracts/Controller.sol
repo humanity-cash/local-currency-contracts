@@ -48,10 +48,10 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
     EnumerableMap.UintToAddressMap private wallets;
 
     /**
-    * @notice Used to initialize a new Controller contract
-    *
-        * @param _erc20Token token used
-    */
+     * @notice Used to initialize a new Controller contract
+     *
+     * @param _erc20Token token used
+     */
     constructor(
         address _erc20Token,
         address _factory
@@ -62,72 +62,72 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
     }
 
     /**
-    * @notice Returns the storage, major, minor, and patch version of the contract.
-    * @return The storage, major, minor, and patch version of the contract.
-        */
+     * @notice Returns the storage, major, minor, and patch version of the contract.
+     * @return The storage, major, minor, and patch version of the contract.
+     */
     function getVersionNumber()
-		external
-		pure
-		override
-		returns (
-			uint256,
-			uint256,
-			uint256,
-			uint256
-		)
+        external
+        pure
+        override
+        returns (
+            uint256,
+            uint256,
+            uint256,
+            uint256
+        )
     {
         return (1, 2, 0, 0);
     }
 
     /**
-    * @notice Enforces values > 0 only
-    */
+     * @notice Enforces values > 0 only
+     */
     modifier greaterThanZero(uint256 _value) {
         require(_value > 0, "ERR_ZERO_VALUE");
         _;
     }
 
     /**
-    * @notice Enforces value to not be greater than a user's available balance
-    */
+     * @notice Enforces value to not be greater than a user's available balance
+     */
     modifier balanceAvailable(bytes32 _userId, uint256 _value) {
         require(balanceOfWallet(_userId) >= _value, "ERR_NO_BALANCE");
         _;
     }
 
     /**
-    * @notice Enforces a _userId should not be mapped to an existing user / contract address
-    */
+     * @notice Enforces a _userId should not be mapped to an existing user / contract address
+     */
     modifier userNotExist(bytes32 _userId) {
         require(!wallets.contains(uint256(_userId)), "ERR_USER_EXISTS");
         _;
     }
 
     /**
-    * @notice Public update to a new Wallet Factory
-    *
-        * @param _newFactoryAddress   new factory address
-    */
+     * @notice Public update to a new Wallet Factory
+     *
+     * @param _newFactoryAddress   new factory address
+     */
     function setWalletFactory(address _newFactoryAddress) external onlyOwner {
         _setWalletFactory(_newFactoryAddress);
     }
 
     /**
-    * @notice Internal implementation of update to a new Wallet Factory
-    *
-        * @param _newFactoryAddress   new factory address
-    */
+     * @notice Internal implementation of update to a new Wallet Factory
+     *
+     * @param _newFactoryAddress   new factory address
+     */
     function _setWalletFactory(address _newFactoryAddress) private {
         walletFactory = IWalletFactory(_newFactoryAddress);
         emit FactoryUpdated(address(walletFactory), _newFactoryAddress);
     }
 
     /**
-    * @notice Retrieves the available balance of a wallet
-    *
-        * @param _userId user identifier
-    * @return uint256 available balance
-    */
+     * @notice Retrieves the available balance of a wallet
+     *
+     * @param _userId user identifier
+     * @return uint256 available balance
+     */
     function balanceOfWallet(bytes32 _userId) public view returns (uint256) {
         address walletAddress = wallets.get(uint256(_userId));
         IWallet wallet = IWallet(walletAddress);
@@ -135,35 +135,35 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
     }
 
     /**
-    * @notice Settles an amount for a wallet and transfers to the wallet contract
-    *
-        * @param _userId       User identifier
-        * @param _txId         Raw transaction ID for this event
-            * @param _value        Amount to settle
-        */
+     * @notice Settles an amount for a wallet and transfers to the wallet contract
+     *
+     * @param _userId       User identifier
+     * @param _txId         Raw transaction ID for this event
+     * @param _value        Amount to settle
+     */
     function settle(
         bytes32 _userId,
         string calldata _txId,
         uint256 _value
     )
-		external
-		greaterThanZero(_value)
-		balanceAvailable(_userId, _value)
-		onlyOwner
-		nonReentrant
-		whenNotPaused
+        external
+        greaterThanZero(_value)
+        balanceAvailable(_userId, _value)
+        onlyOwner
+        nonReentrant
+        whenNotPaused
     {
         _settle(uint256(_userId), _txId, _value);
     }
 
     /**
-    * @notice Settles an amount for a wallet and transfers to the wallet contract
-    * @dev Implementation of external "settle" function so that it may be called internally without reentrancy guard incrementing
-    *
-        * @param _userId       User identifier
-    * @param _txId         Raw transaction ID for this event
-        * @param _value        Amount to settle
-    */
+     * @notice Settles an amount for a wallet and transfers to the wallet contract
+     * @dev Implementation of external "settle" function so that it may be called internally without reentrancy guard incrementing
+     *
+     * @param _userId       User identifier
+     * @param _txId         Raw transaction ID for this event
+     * @param _value        Amount to settle
+     */
     function _settle(
         uint256 _userId,
         string calldata _txId,
@@ -175,16 +175,16 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
     }
 
     /**
-    * @notice create a new user and assign them a wallet contract
-    *
-        * @param _userId user identifier
-    */
+     * @notice create a new user and assign them a wallet contract
+     *
+     * @param _userId user identifier
+     */
     function newWallet(string calldata _userId)
-		external
-		onlyOwner
-		nonReentrant
-		whenNotPaused
-		userNotExist(keccak256(bytes(_userId)))
+        external
+        onlyOwner
+        nonReentrant
+        whenNotPaused
+        userNotExist(keccak256(bytes(_userId)))
     {
         address newWalletAddress = walletFactory.createProxiedWallet(_userId);
         bytes32 key = keccak256(bytes(_userId));
@@ -194,38 +194,38 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
     }
 
     /**
-    * @notice retrieve contract address for a Wallet
-    *
-        * @param _userId user identifier
-        * @return address of user's contract
-        */
+     * @notice retrieve contract address for a Wallet
+     *
+     * @param _userId user identifier
+     * @return address of user's contract
+     */
     function getWalletAddress(bytes32 _userId) public view returns (address) {
         return wallets.get(uint256(_userId), "ERR_USER_NOT_EXIST");
     }
 
-    // /**
-    // * @notice Transfers ownership of the contract to a new account (`newOwner`).
-    // * Can only be called by the current owner.
-    // *
-    // *
-    // * @param newOwner new owner of this contract
-    // * @inheritdoc Ownable
-    // *
-    //  */
+    /**
+     * @notice Transfers ownership of the contract to a new account (`newOwner`).
+     * Can only be called by the current owner.
+     *
+     *
+     * @param newOwner new owner of this contract
+     * @inheritdoc Ownable
+     *
+     */
     function transferContractOwnership(address newOwner) public onlyOwner {
         super.transferOwnership(newOwner);
     }
 
-    // /**
-    // * @notice Transfers ownership of the wallet to a new account (`newOwner`).
-    // * Can only be called by the current owner.
-    // *
-    // *
-    // * @param newOwner new owner of wallet
-    // * @param userId current owner of the wallet
-    // * @inheritdoc Ownable
-    // *
-    //  */
+    /**
+     * @notice Transfers ownership of the wallet to a new account (`newOwner`).
+     * Can only be called by the current owner.
+     *
+     *
+     * @param newOwner new owner of wallet
+     * @param userId current owner of the wallet
+     * @inheritdoc Ownable
+     *
+     */
     function transferWalletOwnership(address newOwner, bytes32 userId) public onlyOwner {
         address walletAddress = getWalletAddress(userId);
         IWallet user = IWallet(walletAddress);
@@ -233,11 +233,11 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
     }
 
     /**
-    * @notice Update implementation address for beneficiaries
-    *
-        * @param _newLogic New implementation logic for wallet proxies
-            *
-            */
+     * @notice Update implementation address for beneficiaries
+     *
+     * @param _newLogic New implementation logic for wallet proxies
+     *
+     */
     function updateWalletImplementation(address _newLogic) external onlyOwner {
         uint256 i;
         for (i = 0; i < wallets.length(); i = i.add(1)) {
@@ -249,40 +249,40 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
     }
 
     /**
-    * @notice Triggers stopped state.
-    *
-        * @dev Requirements: The contract must not be paused.
-        */
+     * @notice Triggers stopped state.
+     *
+     * @dev Requirements: The contract must not be paused.
+     */
     function pause() external onlyOwner nonReentrant {
         _pause();
     }
 
     /**
-    * @notice Returns to normal state.
-    *
-        * @dev Requirements: The contract must be paused.
-        */
+     * @notice Returns to normal state.
+     *
+     * @dev Requirements: The contract must be paused.
+     */
     function unpause() external onlyOwner nonReentrant {
         _unpause();
     }
 
 
     /**
-    * @notice Emergency withdrawal of all remaining token to the owner account
-    *
-        * @dev The contract must be paused
-    * @dev Sends erc20 to current owner
-    */
+     * @notice Emergency withdrawal of all remaining token to the owner account
+     *
+     * @dev The contract must be paused
+     * @dev Sends erc20 to current owner
+     */
     function withdrawToOwner() external onlyOwner whenPaused nonReentrant {
         uint256 balanceOf = erc20Token.balanceOf(address(this));
         erc20Token.transfer(owner(), balanceOf);
     }
 
     /**
-    * @notice Get wallet address at index
-    * @dev Used for iterating the complete list of beneficiaries
-        *
-        */
+     * @notice Get wallet address at index
+     * @dev Used for iterating the complete list of beneficiaries
+     *
+     */
     function getWalletAddressAtIndex(uint256 _index) external view returns (address) {
         // .at function returns a tuple of (uint256, address)
         address walletAddress;
@@ -292,9 +292,9 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
     }
 
     /**
-    * @notice Get count of beneficiaries
-    *
-        */
+     * @notice Get count of beneficiaries
+     *
+     */
     function getWalletCount() external view returns (uint256) {
         return wallets.length();
     }
