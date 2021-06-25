@@ -5,13 +5,13 @@ const { deploy } = require("./deploy");
 const { uuid } = require("uuidv4");
 
 contract("Settlement", async (accounts) => {
-	let controller, factory, testToken, userId;
+	let controller, walletFactory, testToken, userId;
 
 	before(async () => {
 		let deployment = await deploy();
 
 		controller = deployment.controller;
-		factory = deployment.factory;
+		walletFactory = deployment.walletFactory;
 		testToken = deployment.testToken
 
 		userId = uuid();
