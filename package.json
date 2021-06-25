@@ -18,6 +18,7 @@
   "scripts": {
     "ipfs": "node --no-warnings ./scripts/ipfs.js",
     "build": "truffle compile",
+    "postbuild": "yarn export",
     "migrate": "truffle migrate",
     "migrate:baklava": "yarn build && yarn run ipfs && truffle migrate --network baklava",
     "migrate:alfajores": "yarn build && yarn run ipfs && truffle migrate --network alfajores",
