@@ -2,7 +2,7 @@ const Migrations = artifacts.require("Migrations");
 const Controller = artifacts.require("Controller");
 const Wallet = artifacts.require("Wallet");
 const WalletFactory = artifacts.require("WalletFactory");
-const ERC20 = artifacts.require("ERC20PresetMinterPauser");
+const Token = artifacts.require("Token");
 const config = require("./config.json");
 const utils = require("web3-utils");
 
@@ -11,19 +11,24 @@ module.exports = (deployer, network, accounts) => {
 		console.log(`Migrations address ${migrations.address}`);
 
 		// Use configuration items
-		let configToUse = config[`${network}`];
+		let configToUse = config[network];
 		if (!configToUse) configToUse = config["development"];
 
-		let walletFactory, controller, fakeToken;
+		let walletFactory, controller, token;
 
 		// Deploy logic/implementation contracts
 		const wallet = await deployer.deploy(Wallet);
 
-		// If we are local, create a fake token
+		// do we already have a token to use?
 		let tokenToUse = configToUse.token;
-		if (network === "local") {
-			fakeToken = await deployer.deploy(ERC20, "TestToken", "TT");
-			tokenToUse = fakeToken.address;
+		if (!tokenToUse) {
+			//no, deploy one
+			token = await deployer.deploy(
+				Token,
+				configToUse.tokenName,
+				configToUse.tokenTicker
+			);
+			tokenToUse = token.address;
 		}
 
 		// Deploy factory
@@ -45,7 +50,7 @@ module.exports = (deployer, network, accounts) => {
 
 		// If we are local, mint some fake token to play with for the controller
 		if (network === "local") {
-			await fakeToken.mint(
+			await token.mint(
 				controller.address,
 				utils.toWei("10000000", "ether")
 			);
