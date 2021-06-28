@@ -1,17 +1,22 @@
 {
   "development": {
-    "token": "0xa1d0E215a23d7030842FC67cE582a6aFa3CCaB83",
+    "tokenName": "BerkShares",
+    "tokenTicker": "BS",
     "initialOwner": "0x9E7e40A7D134816C34d1eb804Ba63e73f11bE6c5"
   },
   "alfajores": {
-    "token": "0x874069fa1eb16d44d622f2e0ca25eea172369bc1",
+    "tokenName": "BerkShares",
+    "tokenTicker": "BS",
     "initialOwner": "0x9E7e40A7D134816C34d1eb804Ba63e73f11bE6c5"
   },
   "baklava": {
-    "token": "0x62492a644a588fd904270bed06ad52b9abfea1ae",
+    "tokenName": "BerkShares",
+    "tokenTicker": "BS",
     "initialOwner": "0x9E7e40A7D134816C34d1eb804Ba63e73f11bE6c5"
   },
   "mainnet": {
-    "token": "0x765de816845861e75a25fca122bb6898b8b1282a"
+    "tokenName": "BerkShares",
+    "tokenTicker": "BS",
+    "initialOwner": "0x9E7e40A7D134816C34d1eb804Ba63e73f11bE6c5"
   }
 }

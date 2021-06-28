@@ -6,7 +6,6 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
 import "./interface/IWallet.sol";
 import "./interface/IWalletFactory.sol";
@@ -22,7 +21,6 @@ import "./interface/IVersionedContract.sol";
 contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
-    using SafeERC20 for ERC20PresetMinterPauser;
     using EnumerableMap for EnumerableMap.UintToAddressMap;
 
     /**

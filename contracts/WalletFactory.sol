@@ -63,7 +63,7 @@ contract WalletFactory is IVersionedContract, IWalletFactory, Ownable {
         require(address(wallet) != address(0), "ERR_NO_WALLET");
         require(address(proxyAdmin) != address(0), "ERR_NO_PROXY_ADMIN");
 
-        TransparentUpgradeableProxy proxy =
+        TransparentUpgradeableProxy walletProxy =
         new TransparentUpgradeableProxy(
             address(wallet),
             address(proxyAdmin),
@@ -75,11 +75,11 @@ contract WalletFactory is IVersionedContract, IWalletFactory, Ownable {
             )
         );
 
-        address proxyAddress = address(proxy);
-        require(proxyAddress != address(0), "ERR_NO_PROXY");
+        address walletProxyAddress = address(walletProxy);
+        require(walletProxyAddress != address(0), "ERR_NO_PROXY");
 
-        emit WalletCreated(proxyAddress);
-        return proxyAddress;
+        emit WalletCreated(walletProxyAddress);
+        return walletProxyAddress;
     }
 
     /**
