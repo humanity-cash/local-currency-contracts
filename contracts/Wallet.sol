@@ -2,10 +2,10 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol";
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "./interface/IWallet.sol";
 import "./interface/IVersionedContract.sol";
@@ -26,7 +26,6 @@ contract Wallet is
 {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
-    using SafeERC20 for ERC20PresetMinterPauser;
 
     IERC20 public erc20Token;
     uint256 public createdBlock;
