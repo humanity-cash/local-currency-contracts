@@ -5,7 +5,7 @@
 
 
 
-### `constructor(contract IWallet _wallet, contract IERC20 _erc20Token)` (public)
+### `constructor(address _erc20Token, address _wallet)` (public)
 
 Constructor for WalletFactory contract
 
@@ -19,7 +19,7 @@ Returns the storage, major, minor, and patch version of the contract.
 
 
 
-### `createProxiedWallet(string _userId) → address` (external)
+### `createProxiedWallet(bytes32 _userId) → address` (external)
 
 Create a new Wallet proxy contract
 

@@ -5,7 +5,7 @@
 
 
 
-### `createProxiedWallet(string _userId) → address` (external)
+### `createProxiedWallet(bytes32 _userId) → address` (external)
 
 Create a new Wallet proxy contract
 

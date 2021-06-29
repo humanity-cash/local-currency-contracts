@@ -20,26 +20,9 @@ Returns the storage, major, minor, and patch version of the contract.
 
 
 
-### `initialize(address _erc20Token, address _controller, string _userId)` (external)
+### `initialize(address _erc20Token, address _controller, bytes32 _userId)` (external)
 
 used to initialize a new Wallet contract
-
-
-
-
-
-### `getSettlementKeys() → bytes32[]` (external)
-
-Return array of settlementKeys
-
-
-
-Note this is marked external, you cannot return dynamically sized data target is a Web3 caller for iterating Settlements
-
-
-### `getSettlementAtKey(bytes32 _key) → uint256, string` (external)
-
-Return the primitive attributes of an Settlement struct
 
 
 
@@ -53,7 +36,7 @@ retrieve available balance for this contract
 
 
 
-### `settle(string _txId, uint256 _value)` (external)
+### `transferTo(contract IWallet _toWallet, uint256 _value) → bool` (external)
 
 Perform a settlement by returning token to the wallet contract
 

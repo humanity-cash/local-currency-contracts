@@ -1,4 +1,4 @@
-const Web3 = require("web3");
+const utils = require("web3-utils");
 const Controller = artifacts.require("Controller");
 const WalletFactory = artifacts.require("WalletFactory");
 const Token = artifacts.require("Token");
@@ -14,11 +14,7 @@ module.exports.deploy = async () => {
 
 	await walletFactory.transferOwnership(controller.address);
 
-	// mint some test tokens for unit testing
-	await testToken.mint(
-		controller.address,
-		Web3.utils.toWei("10000000", "ether")
-	);
+	await testToken.grantRole(utils.toHex("MINTER_ROLE"), controller.address);
 
 	return {
 		wallet,
