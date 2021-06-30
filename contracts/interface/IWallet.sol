@@ -7,12 +7,13 @@ pragma solidity ^0.8.0;
  * @dev A simple wallet contract to hold specific ERC20 tokens that is controlled by an owner
  *
  * @author Aaron Boyd <https://github.com/aaronmboyd>
+ * @author Sebastian Gerske <https://github.com/h34d>
  */
 interface IWallet {
     /**
-     * @notice Triggered when an amount has been settled for a user
+     * @notice Triggered when an amount has been transferred from one wallet to another
      *
-     * @param _fromUserId       Hashed bytes32 of the userId
+     * @param _fromUserId       Hashed bytes32 of the sender
      * @param _toUserId         Hashed bytes32 of the receiver
      * @param _amt              Amount of the transaction
      */
@@ -39,12 +40,10 @@ interface IWallet {
     function availableBalance() external view returns (uint256);
 
     /**
-     * @notice Perform a settlement by returning token to the wallet contract
+     * @notice Performs a transfer from one wallet to another
      *
-     * @param _toWallet     address todo lorem ipsum
+     * @param _toWallet     IWallet wallet to transfer to
      * @param _value        uint256 transaction amount
-     *
-     * @dev If there was an existing authorization for this txId, de-authorize it, for the original authorization amount, regardless of the current settlement amount
      *
      */
     function transferTo(IWallet _toWallet, uint256 _value) external returns (bool);

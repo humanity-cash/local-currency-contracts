@@ -38,11 +38,10 @@ retrieve available balance for this contract
 
 ### `transferTo(contract IWallet _toWallet, uint256 _value) → bool` (external)
 
-Perform a settlement by returning token to the wallet contract
+Performs a transfer from one wall to another
 
 
 
-If there was an existing authorization for this txId, de-authorize it, for the original authorization amount, regardless of the current settlement amount
 
 
 ### `transferController(address _newController)` (external)

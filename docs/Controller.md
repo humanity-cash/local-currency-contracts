@@ -64,7 +64,7 @@ Retrieves the available balance of a wallet
 
 ### `transferTo(bytes32 _fromUserId, bytes32 _toUserId, uint256 _value) → bool` (external)
 
-Settles an amount for a wallet and transfers to the wallet contract
+Transfers a local currency token between two existing wallets
 
 
 
@@ -114,7 +114,7 @@ Can only be called by the current owner.
 
 ### `updateWalletImplementation(address _newLogic)` (external)
 
-Update implementation address for beneficiaries
+Update implementation address for wallets
 
 
 
@@ -150,12 +150,12 @@ Sends erc20 to current owner
 Get wallet address at index
 
 
-Used for iterating the complete list of beneficiaries
+Used for iterating the complete list of wallets
 
 
 ### `getWalletCount() → uint256` (external)
 
-Get count of beneficiaries
+Get count of wallets
 
 
 

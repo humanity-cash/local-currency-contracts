@@ -16,6 +16,7 @@ import "./interface/IVersionedContract.sol";
  * @dev A simple wallet contract to hold specific ERC20 tokens that is controlled by an owner
  *
  * @author Aaron Boyd <https://github.com/aaronmboyd>
+ * @author Sebastian Gerske <https://github.com/h34d>
  */
 contract Wallet is IVersionedContract, IWallet, AccessControl, Initializable, ReentrancyGuard {
     using SafeMath for uint256;
@@ -86,12 +87,10 @@ contract Wallet is IVersionedContract, IWallet, AccessControl, Initializable, Re
     }
 
     /**
-     * @notice Perform a settlement by returning token to the wallet contract
+     * @notice Performs a transfer from one wall to another
      *
-     * @param _toWallet     address todo lorem ipsum
+     * @param _toWallet     IWallet wallet to transfer to
      * @param _value        uint256 transaction amount
-     *
-     * @dev If there was an existing authorization for this txId, de-authorize it, for the original authorization amount, regardless of the current settlement amount
      *
      */
     function transferTo(IWallet _toWallet, uint256 _value)

@@ -18,6 +18,7 @@ import "./interface/IVersionedContract.sol";
  * @dev Administrative and orchestrator contract for local currencies
  *
  * @author Aaron Boyd <https://github.com/aaronmboyd>
+ * @author Sebastian Gerske <https://github.com/h34d>
  */
 contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
     using SafeMath for uint256;
@@ -139,7 +140,7 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
      *
      * @param _fromUserId   User identifier
      * @param _toUserId     Receiver identifier
-     * @param _value        Amount to settle
+     * @param _value        Amount to transfer
      */
     function transferTo(
         bytes32 _fromUserId,
@@ -165,7 +166,7 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
      *
      * @param _fromUserId   User identifier
      * @param _toUserId     Receiver identifier
-     * @param _value        Amount to settle
+     * @param _value        Amount to transfer
      */
     function _transferTo(
         bytes32 _fromUserId,
@@ -212,7 +213,7 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
         userNotExist(_userId)
     {
         address newWalletAddress = walletFactory.createProxiedWallet(_userId);
-        require(newWalletAddress != address(0x0));
+        require(newWalletAddress != address(0x0), "ERR_WALLET_FAILED");
 
         wallets.set(uint256(_userId), newWalletAddress);
 
@@ -257,7 +258,7 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
     }
 
     /**
-     * @notice Update implementation address for beneficiaries
+     * @notice Update implementation address for wallets
      *
      * @param _newLogic New implementation logic for wallet proxies
      *
@@ -303,7 +304,7 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
 
     /**
      * @notice Get wallet address at index
-     * @dev Used for iterating the complete list of beneficiaries
+     * @dev Used for iterating the complete list of wallets
      *
      */
     function getWalletAddressAtIndex(uint256 _index) external view returns (address) {
@@ -315,7 +316,7 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
     }
 
     /**
-     * @notice Get count of beneficiaries
+     * @notice Get count of wallets
      *
      */
     function getWalletCount() external view returns (uint256) {
