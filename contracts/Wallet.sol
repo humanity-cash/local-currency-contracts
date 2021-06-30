@@ -17,13 +17,7 @@ import "./interface/IVersionedContract.sol";
  *
  * @author Aaron Boyd <https://github.com/aaronmboyd>
  */
-contract Wallet is
-    IVersionedContract,
-    IWallet,
-    AccessControl,
-    Initializable,
-    ReentrancyGuard
-{
+contract Wallet is IVersionedContract, IWallet, AccessControl, Initializable, ReentrancyGuard {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
@@ -100,11 +94,13 @@ contract Wallet is
      * @dev If there was an existing authorization for this txId, de-authorize it, for the original authorization amount, regardless of the current settlement amount
      *
      */
-    function transferTo(
-        IWallet _toWallet,
-        uint256 _value
-    ) external override onlyController(msg.sender) nonReentrant returns (bool) {
-
+    function transferTo(IWallet _toWallet, uint256 _value)
+        external
+        override
+        onlyController(msg.sender)
+        nonReentrant
+        returns (bool)
+    {
         address toWalletAddress = address(_toWallet);
         bool success = erc20Token.transfer(toWalletAddress, _value);
         emit TransferToEvent(userId, Wallet(toWalletAddress).userId(), _value);

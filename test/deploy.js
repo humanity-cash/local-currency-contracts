@@ -5,21 +5,21 @@ const Token = artifacts.require("Token");
 const Wallet = artifacts.require("Wallet");
 
 module.exports.deploy = async () => {
-	let controller, walletFactory, testToken, wallet;
+	let controller, walletFactory, token, wallet;
 
-	testToken = await Token.new("TestToken", "TT");
+	token = await Token.new("TestToken", "TT");
 	wallet = await Wallet.new();
-	walletFactory = await WalletFactory.new(testToken.address, wallet.address);
-	controller = await Controller.new(testToken.address, walletFactory.address);
+	walletFactory = await WalletFactory.new(token.address, wallet.address);
+	controller = await Controller.new(token.address, walletFactory.address);
 
 	await walletFactory.transferOwnership(controller.address);
 
-	await testToken.grantRole(utils.toHex("MINTER_ROLE"), controller.address);
+	await token.grantRole(utils.toHex("MINTER_ROLE"), controller.address);
 
 	return {
 		wallet,
 		controller,
 		walletFactory,
-		testToken,
+		token,
 	};
 };

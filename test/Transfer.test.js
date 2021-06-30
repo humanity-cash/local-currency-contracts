@@ -1,40 +1,54 @@
+/* global it, before */
 const truffleAssert = require("truffle-assertions");
 const { uuid } = require("uuidv4");
 const { deploy } = require("./deploy");
 const { toBytes32 } = require("./toBytes32");
-const utils = require("web3-utils");
+const { oneHundredTokens, oneToken, zeroTokens } = require("./constants");
 
 contract("Controller.Transfer", async (accounts) => {
 	const [, someone] = accounts;
 
-	let controller, walletFactory, testToken, userId;
+	let deployment, walletId;
 
 	before(async () => {
-		let deployment = await deploy();
+		deployment = await deploy();
 
-		controller = deployment.controller;
-		walletFactory = deployment.walletFactory;
-		testToken = deployment.testToken;
+		const { controller, token } = deployment;
+		walletId = toBytes32(uuid());
+		await controller.newWallet(walletId);
 
-		userId = toBytes32(uuid());
-		await controller.newWallet(userId);
-
-		await testToken.mint(
-			await controller.getWalletAddress(userId),
-			utils.toWei("100", "ether")
+		await token.mint(
+			await controller.getWalletAddress(walletId),
+			oneHundredTokens
 		);
 	});
 
 	it("Should transfer to new wallet", async () => {
-		const userId2 = toBytes32(uuid());
-		await controller.newWallet(userId2);
+		const { controller } = deployment;
 
-		await controller.transferTo(userId, userId2, utils.toWei("1", "ether"));
+		const newWalletId = toBytes32(uuid());
+		await controller.newWallet(newWalletId);
+
+		await controller.transferTo(walletId, newWalletId, oneToken);
+	});
+
+	it("Should fail to transfer with zero value even if funds are available", async () => {
+		const { controller } = deployment;
+
+		const newWalletId = toBytes32(uuid());
+		await controller.newWallet(newWalletId);
+
+		await truffleAssert.reverts(
+			controller.transferTo(walletId, newWalletId, zeroTokens),
+			"ERR_ZERO_VALUE"
+		);
 	});
 
 	it("Should fail to transfer when called from someone", async () => {
+		const { controller } = deployment;
+
 		await truffleAssert.reverts(
-			controller.transferTo(userId, userId, utils.toWei("1", "ether"), {
+			controller.transferTo(walletId, walletId, oneToken, {
 				from: someone,
 			}),
 			"Ownable: caller is not the owner"
@@ -42,39 +56,57 @@ contract("Controller.Transfer", async (accounts) => {
 	});
 
 	it("Should fail to transfer when receiver wallet does not exist", async () => {
-		const userId2 = toBytes32(uuid());
+		const { controller } = deployment;
+
+		const newWalletId = toBytes32(uuid());
 
 		await truffleAssert.reverts(
-			controller.transferTo(userId, userId2, utils.toWei("1", "ether")),
+			controller.transferTo(walletId, newWalletId, oneToken),
 			"ERR_USER_NOT_EXIST"
 		);
 	});
 
 	it("Should fail to transfer when sender wallet does not exist", async () => {
-		const userId2 = toBytes32(uuid());
+		const { controller } = deployment;
+
+		const newWalletId = toBytes32(uuid());
 
 		await truffleAssert.reverts(
-			controller.transferTo(userId2, userId, utils.toWei("1", "ether")),
+			controller.transferTo(newWalletId, walletId, oneToken),
 			"ERR_USER_NOT_EXISTS"
 		);
 	});
 
 	it("Should fail to transfer when no funds available", async () => {
-		const userId2 = toBytes32(uuid());
-		await controller.newWallet(userId2);
+		const { controller } = deployment;
+
+		const newWalletId = toBytes32(uuid());
+		await controller.newWallet(newWalletId);
 
 		await truffleAssert.reverts(
-			controller.transferTo(userId2, userId2, utils.toWei("1", "ether")),
+			controller.transferTo(newWalletId, newWalletId, oneToken),
 			"ERR_NO_BALANCE"
 		);
 	});
 
 	it("Should transfer to new wallet and back", async () => {
-		const userId2 = toBytes32(uuid());
-		await controller.newWallet(userId2);
+		const { controller } = deployment;
 
-		await controller.transferTo(userId, userId2, utils.toWei("1", "ether"));
+		const newWalletId = toBytes32(uuid());
+		await controller.newWallet(newWalletId);
+		await controller.transferTo(walletId, newWalletId, oneToken);
+		await controller.transferTo(newWalletId, walletId, oneToken);
+	});
 
-		await controller.transferTo(userId2, userId, utils.toWei("1", "ether"));
+	it("Should fail to transfer to new wallet if paused", async () => {
+		const { controller } = deployment;
+
+		const newWalletId = toBytes32(uuid());
+		await controller.newWallet(newWalletId);
+		await controller.pause();
+		await truffleAssert.reverts(
+			controller.transferTo(walletId, newWalletId, oneToken),
+			"Pausable: paused -- Reason given: Pausable: paused"
+		);
 	});
 });

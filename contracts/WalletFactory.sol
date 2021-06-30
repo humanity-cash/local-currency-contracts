@@ -20,11 +20,7 @@ contract WalletFactory is IVersionedContract, IWalletFactory, Ownable {
      * @notice Constructor for WalletFactory contract
      *
      */
-    constructor(
-        address _erc20Token,
-        address _wallet
-    )
-    {
+    constructor(address _erc20Token, address _wallet) {
         proxyAdmin = new ProxyAdmin();
         erc20Token = IERC20(_erc20Token);
         wallet = IWallet(_wallet);
@@ -54,17 +50,12 @@ contract WalletFactory is IVersionedContract, IWalletFactory, Ownable {
      * @param _userId UserId of the new wallet
      *
      */
-    function createProxiedWallet(bytes32 _userId)
-        external
-        override
-        returns (address)
-    {
+    function createProxiedWallet(bytes32 _userId) external override returns (address) {
         require(_userId.length > 0, "ERR_NO_USER_ID");
         require(address(wallet) != address(0), "ERR_NO_WALLET");
         require(address(proxyAdmin) != address(0), "ERR_NO_PROXY_ADMIN");
 
-        TransparentUpgradeableProxy walletProxy =
-        new TransparentUpgradeableProxy(
+        TransparentUpgradeableProxy walletProxy = new TransparentUpgradeableProxy(
             address(wallet),
             address(proxyAdmin),
             abi.encodeWithSignature(

@@ -1,33 +1,30 @@
+/* global it, before */
 const { deploy } = require("./deploy");
 
-contract("Controller.Pause", async (accounts) => {
-	const [owner, someone] = accounts;
-
-	let controller, walletFactory, testToken, wallet;
+contract("Controller.Pause", async () => {
+	let deployment;
 
 	before(async () => {
-		let deployment = await deploy();
-
-		wallet = deployment.wallet;
-		controller = deployment.controller;
-		walletFactory = deployment.walletFactory;
-		testToken = deployment.testToken;
+		deployment = await deploy();
 	});
 
 	it("Should be able to pause", async () => {
+		const { controller } = deployment;
 		await controller.pause();
 	});
 
 	it("Should be able to unpause", async () => {
+		const { controller } = deployment;
 		await controller.unpause();
 	});
 
 	it("Should be able to emergency withdraw after pausing", async () => {
+		const { controller, token } = deployment;
 		await controller.pause();
 		await controller.withdrawToOwner();
 		await controller.unpause();
 
-		const controllerBalanceOfNew = await testToken.balanceOf(
+		const controllerBalanceOfNew = await token.balanceOf(
 			controller.address
 		);
 

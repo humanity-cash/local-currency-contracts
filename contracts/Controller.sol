@@ -51,11 +51,7 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
      *
      * @param _erc20Token token used
      */
-    constructor(
-        address _erc20Token,
-        address _walletFactory
-    )
-    {
+    constructor(address _erc20Token, address _walletFactory) {
         erc20Token = ERC20PresetMinterPauser(_erc20Token);
         walletFactory = IWalletFactory(_walletFactory);
     }
@@ -158,9 +154,8 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
         onlyOwner
         nonReentrant
         whenNotPaused
-        returns(bool)
+        returns (bool)
     {
-
         return _transferTo(_fromUserId, _toUserId, _value);
     }
 
@@ -176,17 +171,14 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
         bytes32 _fromUserId,
         bytes32 _toUserId,
         uint256 _value
-    ) private returns(bool) {
+    ) private returns (bool) {
         IWallet fromWallet = IWallet(getWalletAddress(_fromUserId));
         IWallet toWallet = IWallet(getWalletAddress(_toUserId));
 
         return fromWallet.transferTo(toWallet, _value);
     }
 
-    function deposit(
-        bytes32 _userId,
-        uint256 _value
-    )
+    function deposit(bytes32 _userId, uint256 _value)
         external
         greaterThanZero(_value)
         userExist(_userId)
@@ -198,15 +190,9 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
         return _deposit(_userId, _value);
     }
 
-    function _deposit(
-        bytes32 _userId,
-        uint256 _value
-    )
-        private
-        returns (bool)
-    {
+    function _deposit(bytes32 _userId, uint256 _value) private returns (bool) {
         address tmpWalletAddress = getWalletAddress(_userId);
-        (bool success,) = address(erc20Token).call(
+        (bool success, ) = address(erc20Token).call(
             abi.encodeWithSignature("mint(address,uint256)", tmpWalletAddress, _value)
         );
 

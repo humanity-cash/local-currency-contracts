@@ -1,18 +1,16 @@
+/* global it, before */
 const truffleAssert = require("truffle-assertions");
 const { deploy } = require("./deploy");
 
-contract("Versions", async (accounts) => {
-	let controller, walletFactory, wallet;
+contract("Versions", async () => {
+	let deployment;
 
 	before(async () => {
-		let deployment = await deploy();
-
-		wallet = deployment.wallet;
-		controller = deployment.controller;
-		walletFactory = deployment.walletFactory;
+		deployment = await deploy();
 	});
 
 	it("Should read version numbers of all deployed contracts", async () => {
+		const { controller, walletFactory, wallet } = deployment;
 		await truffleAssert.passes(
 			console.log(
 				`Controller version: ${JSON.stringify(

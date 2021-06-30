@@ -1,3 +1,4 @@
+/* global it, before */
 const WalletFactory = artifacts.require("WalletFactory");
 const Wallet = artifacts.require("Wallet");
 const { toBytes32 } = require("./toBytes32");
@@ -7,33 +8,34 @@ const { deploy } = require("./deploy");
 contract("Controller", async (accounts) => {
 	const [owner, someone] = accounts;
 
-	let controller, walletFactory, testToken, wallet;
+	let deployment;
 
 	before(async () => {
-		let deployment = await deploy();
-
-		wallet = deployment.wallet;
-		controller = deployment.controller;
-		walletFactory = deployment.walletFactory;
-		testToken = deployment.testToken;
+		deployment = await deploy();
 	});
 
 	it("Should read public attributes for important internal addresses", async () => {
+		const { controller } = deployment;
 		const token = await controller.erc20Token();
 		assert(token);
 	});
 
 	it("Should have an owner matching the deployer address", async () => {
+		const { controller } = deployment;
 		const contractOwner = await controller.owner();
 		assert.equal(owner, contractOwner, `Owner should be ${owner}`);
 	});
 
 	it("Should be able to update factory", async () => {
+		const { controller } = deployment;
+
 		const factory = await controller.walletFactory();
 		await controller.setWalletFactory(factory);
 	});
 
 	it("Should be able to update wallet proxy logic contract after creating 3 new accounts", async () => {
+		const { controller } = deployment;
+
 		const newLogic = await Wallet.new();
 		await controller.newWallet(toBytes32(uuid()));
 		await controller.newWallet(toBytes32(uuid()));
@@ -42,8 +44,10 @@ contract("Controller", async (accounts) => {
 	});
 
 	it("Should be able to update the factory and create a new user", async () => {
+		const { controller, token, wallet } = deployment;
+
 		const newFactory = await WalletFactory.new(
-			testToken.address,
+			token.address,
 			wallet.address
 		);
 		await controller.setWalletFactory(newFactory.address);
@@ -51,6 +55,8 @@ contract("Controller", async (accounts) => {
 	});
 
 	it("Should be able to transfer ownership", async () => {
+		const { controller } = deployment;
+
 		let user1 = toBytes32(uuid());
 		let user2 = toBytes32(uuid());
 		let user3 = toBytes32(uuid());
