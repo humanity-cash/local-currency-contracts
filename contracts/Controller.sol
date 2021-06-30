@@ -135,7 +135,7 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
     }
 
     /**
-     * @notice Settles an amount for a wallet and transfers to the wallet contract
+     * @notice Transfers a local currency token between two existing wallets
      *
      * @param _fromUserId   User identifier
      * @param _toUserId     Receiver identifier
@@ -160,8 +160,8 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
     }
 
     /**
-     * @notice Settles an amount for a wallet and transfers to the wallet contract
-     * @dev Implementation of external "settle" function so that it may be called internally without reentrancy guard incrementing
+     * @notice Internal implementation of transferring a local currency token between two existing wallets
+     * @dev Implementation of external "transferTo" function so that it may be called internally without reentrancy guard incrementing
      *
      * @param _fromUserId   User identifier
      * @param _toUserId     Receiver identifier
