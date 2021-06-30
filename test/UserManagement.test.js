@@ -20,9 +20,10 @@ contract("User Management", async (accounts) => {
 	});
 
 	it("Should verify Controller contract has token balance", async () => {
-		await testToken.mint(controller.address, utils.toWei("1", "ether"));
+		const amount = utils.toWei("1", "ether");
+		await testToken.mint(controller.address, amount);
 		const balance = await testToken.balanceOf(controller.address);
-		assert(balance > 0);
+		assert.equal(balance.toString(), amount);
 	});
 
 	it("Should not create a user that already exists", async () => {
@@ -33,11 +34,11 @@ contract("User Management", async (accounts) => {
 	});
 
 	it("Should create three more users and count a total", async () => {
-		let user2 = uuid();
-		await controller.newWallet(toBytes32(user2));
+		let user2 = toBytes32(uuid());
+		await controller.newWallet(user2);
 
-		let user3 = uuid();
-		await controller.newWallet(toBytes32(user3));
+		let user3 = toBytes32(uuid());
+		await controller.newWallet(user3);
 
 		const walletCount = await controller.getWalletCount();
 		assert.equal(walletCount, 3);
