@@ -10,29 +10,29 @@ Starting migrations...
 
    Deploying 'Migrations'
    ----------------------
-   > transaction hash:    0x54e657a1da9f26dc9598073cca15d00450547e11b366c0aa3aa881d2cf0fa3df
-   > Blocks: 0            Seconds: 4
-   > contract address:    0xE291A85d2677372a4E94AeDcbFcbC149C9D05533
-   > block number:        5957678
-   > block timestamp:     1625142892
+   > transaction hash:    0x50e6c47c08433cc1ca0cb880d0bc0830a49091485ae8f1d09b050b795a9dd72b
+   > Blocks: 0            Seconds: 0
+   > contract address:    0xeE1332f127aA2eae6e57B01d0D4C37Ba5Cc3EEBc
+   > block number:        5958526
+   > block timestamp:     1625147132
    > account:             0x9E7e40A7D134816C34d1eb804Ba63e73f11bE6c5
-   > balance:             52.8994148865
+   > balance:             52.8929205385
    > gas used:            153118 (0x2561e)
    > gas price:           0.5 gwei
    > value sent:          0 ETH
    > total cost:          0.000076559 ETH
 
-Migrations address 0xE291A85d2677372a4E94AeDcbFcbC149C9D05533
+Migrations address 0xeE1332f127aA2eae6e57B01d0D4C37Ba5Cc3EEBc
 
    Deploying 'Wallet'
    ------------------
-   > transaction hash:    0xf1c96a95176f3c714f66ac12cf2db5029975af2385f1b0897d5c9bc4c07faaf1
-   > Blocks: 1            Seconds: 4
-   > contract address:    0x1Bd0c6fAe7012A294ecDf488b44269eA301a17CA
-   > block number:        5957679
-   > block timestamp:     1625142897
+   > transaction hash:    0x0d5dd65c95fcf687e8085829ef6dcdff51f377a52d12fd62b4d1496c19233ec9
+   > Blocks: 0            Seconds: 0
+   > contract address:    0x4bD5C6F65c527888f9fd407CaEF96c429187778b
+   > block number:        5958527
+   > block timestamp:     1625147137
    > account:             0x9E7e40A7D134816C34d1eb804Ba63e73f11bE6c5
-   > balance:             52.8989872335
+   > balance:             52.8924928855
    > gas used:            855306 (0xd0d0a)
    > gas price:           0.5 gwei
    > value sent:          0 ETH
@@ -41,28 +41,28 @@ Migrations address 0xE291A85d2677372a4E94AeDcbFcbC149C9D05533
 
    Deploying 'Token'
    -----------------
-   > transaction hash:    0xc9e925239b47f5e048056126b523e2fbe13288ed80732f8fd1df0d6c50f42463
+   > transaction hash:    0x0c7f02736e92470d2bd6d76f07b1c69137a61dc1b7ce6f66f0e01327023675b9
    > Blocks: 0            Seconds: 0
-   > contract address:    0xFE161AAd1eE51a18bFfCf6620D9065eA3280E04d
-   > block number:        5957680
-   > block timestamp:     1625142902
+   > contract address:    0xd1e1f2b6301d3Ba0F26521617f6fDD666825f209
+   > block number:        5958528
+   > block timestamp:     1625147142
    > account:             0x9E7e40A7D134816C34d1eb804Ba63e73f11bE6c5
-   > balance:             52.898079009
-   > gas used:            1816449 (0x1bb781)
+   > balance:             52.891584643
+   > gas used:            1816485 (0x1bb7a5)
    > gas price:           0.5 gwei
    > value sent:          0 ETH
-   > total cost:          0.0009082245 ETH
+   > total cost:          0.0009082425 ETH
 
 
    Deploying 'WalletFactory'
    -------------------------
-   > transaction hash:    0x641d340ee58f3e1489dfb2acbbd81220a67756e333c8254da78cbe8f15cc5e01
+   > transaction hash:    0xc8a0ea0ef5a9a4b3e46c604e1d4fdf8a9d32b0eba5e579e7bde92620bda5419a
    > Blocks: 0            Seconds: 0
-   > contract address:    0x7D99AE032D813689Ba76C866F8EB6E6ED90884b9
-   > block number:        5957681
-   > block timestamp:     1625142907
+   > contract address:    0x577cEF814c8E3AD38ACCc9912C9a9Ad19F099116
+   > block number:        5958529
+   > block timestamp:     1625147147
    > account:             0x9E7e40A7D134816C34d1eb804Ba63e73f11bE6c5
-   > balance:             52.897179497
+   > balance:             52.890685131
    > gas used:            1799024 (0x1b7370)
    > gas price:           0.5 gwei
    > value sent:          0 ETH
@@ -71,13 +71,13 @@ Migrations address 0xE291A85d2677372a4E94AeDcbFcbC149C9D05533
 
    Deploying 'Controller'
    ----------------------
-   > transaction hash:    0xe0f42c0af0de2824f5636d9cb8136f3f57ecb094942780d136ca8773d87bd447
+   > transaction hash:    0x602b782c7c3a5afaa0f8dd8c7046d10a51ec56181d360c201458fc39e593832d
    > Blocks: 0            Seconds: 0
-   > contract address:    0x0148A386d34d54078416ba9c7367BD41fF6fA663
-   > block number:        5957682
-   > block timestamp:     1625142912
+   > contract address:    0x9a39f9307026a1Ec08aa57Fa80000D74b8C2BCc9
+   > block number:        5958530
+   > block timestamp:     1625147152
    > account:             0x9E7e40A7D134816C34d1eb804Ba63e73f11bE6c5
-   > balance:             52.8965192205
+   > balance:             52.8900248545
    > gas used:            1320553 (0x142669)
    > gas price:           0.5 gwei
    > value sent:          0 ETH
@@ -87,10 +87,10 @@ Migrations address 0xE291A85d2677372a4E94AeDcbFcbC149C9D05533
    > Saving migration to chain.
    > Saving artifacts
    -------------------------------------
-   > Total cost:         0.002972225 ETH
+   > Total cost:         0.002972243 ETH
 
 
 Summary
 =======
 > Total deployments:   5
-> Final cost:          0.002972225 ETH
+> Final cost:          0.002972243 ETH
