@@ -15,7 +15,7 @@ interface IWalletFactory {
      * @param _userId UserId of the new wallet
      *
      */
-    function createProxiedWallet(string memory _userId) external returns (address);
+    function createProxiedWallet(bytes32 _userId) external returns (address);
 
     /**
      * @notice Update proxy implementation address

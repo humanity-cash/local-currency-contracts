@@ -7,22 +7,17 @@ pragma solidity ^0.8.0;
  * @dev A simple wallet contract to hold specific ERC20 tokens that is controlled by an owner
  *
  * @author Aaron Boyd <https://github.com/aaronmboyd>
+ * @author Sebastian Gerske <https://github.com/h34d>
  */
 interface IWallet {
     /**
-     * @notice Triggered when an amount has been settled for a user
+     * @notice Triggered when an amount has been transferred from one wallet to another
      *
-     * @param _userId           Hashed bytes32 of the userId converted to uint256
-     * @param _walletAddress    Address of the wallet
-     * @param _txId             Raw transaction ID for this event
+     * @param _fromUserId       Hashed bytes32 of the sender
+     * @param _toUserId         Hashed bytes32 of the receiver
      * @param _amt              Amount of the transaction
      */
-    event SettlementEvent(
-        bytes32 indexed _userId,
-        address indexed _walletAddress,
-        string _txId,
-        uint256 _amt
-    );
+    event TransferToEvent(bytes32 indexed _fromUserId, bytes32 indexed _toUserId, uint256 _amt);
 
     /**
      * @notice Used to initialize a new Wallet contract
@@ -34,25 +29,8 @@ interface IWallet {
     function initialize(
         address _erc20token,
         address _controller,
-        string memory _userId
+        bytes32 _userId
     ) external;
-
-    /**
-     * @notice Return array of settlementKeys
-     *
-     * @dev Note this is marked external, you cannot return dynamically sized data target is a Web3 caller for iterating Settlements
-     *
-     */
-    function getSettlementKeys() external view returns (bytes32[] memory);
-
-
-    /**
-     * @notice Return the primitive attributes of an Settlement struct
-     *
-     * @param _key Map key of the Settlement to return
-     *
-     */
-    function getSettlementAtKey(bytes32 _key) external view returns (uint256, string memory);
 
     /**
      * @notice retrieve available balance for this contract
@@ -62,18 +40,13 @@ interface IWallet {
     function availableBalance() external view returns (uint256);
 
     /**
-     * @notice Perform a settlement by returning token to the wallet contract
+     * @notice Performs a transfer from one wallet to another
      *
-     * @param _txId Dynamic string txId of the transaction to authorize
-     * @param _value uint256 transaction amount
-     *
-     * @dev If there was an existing authorization for this txId, de-authorize it, for the original authorization amount, regardless of the current settlement amount
+     * @param _toWallet     IWallet wallet to transfer to
+     * @param _value        uint256 transaction amount
      *
      */
-    function settle(
-        string calldata _txId,
-        uint256 _value
-    ) external;
+    function transferTo(IWallet _toWallet, uint256 _value) external returns (bool);
 
     /**
      * @notice Transfer control of the controller

@@ -1,40 +1,46 @@
+/* global it, before */
 const Wallet = artifacts.require("Wallet");
 const truffleAssert = require("truffle-assertions");
-const { deploy } = require("./deploy");
 const { uuid } = require("uuidv4");
+const { oneToken } = require("./constants");
+const { deploy } = require("./deploy");
+const { toBytes32 } = require("./toBytes32");
 
-contract("User Management", async (accounts) => {
-	let controller, tokenMinted, user1, walletFactory, testToken;
+contract("User Management", async () => {
+	let deployment, userId;
 
 	before(async () => {
-		let deployment = await deploy();
+		deployment = await deploy();
 
-		controller = deployment.controller;
-		walletFactory = deployment.walletFactory;
-		testToken = deployment.testToken;
+		const { controller } = deployment;
 
-		tokenMinted = await testToken.balanceOf(controller.address);
-		user1 = uuid();
-		await controller.newWallet(user1);
+		userId = toBytes32(uuid());
+		await controller.newWallet(userId);
 	});
 
 	it("Should verify Controller contract has token balance", async () => {
-		const balance = await testToken.balanceOf(controller.address);
-		assert(balance > 0);
+		const { token, controller } = deployment;
+		await token.mint(controller.address, oneToken);
+		const balance = await token.balanceOf(controller.address);
+		assert.equal(balance.toString(), oneToken);
 	});
 
 	it("Should not create a user that already exists", async () => {
+		const { controller } = deployment;
+
 		await truffleAssert.fails(
-			controller.newWallet(user1),
+			controller.newWallet(userId),
 			truffleAssert.ErrorType.REVERT
 		);
 	});
 
 	it("Should create three more users and count a total", async () => {
-		let user2 = uuid();
+		const { controller } = deployment;
+
+		let user2 = toBytes32(uuid());
 		await controller.newWallet(user2);
 
-		let user3 = uuid();
+		let user3 = toBytes32(uuid());
 		await controller.newWallet(user3);
 
 		const walletCount = await controller.getWalletCount();
@@ -42,6 +48,8 @@ contract("User Management", async (accounts) => {
 	});
 
 	it("Should iterate the users", async () => {
+		const { controller } = deployment;
+
 		const walletCount = await controller.getWalletCount();
 
 		let users = [];

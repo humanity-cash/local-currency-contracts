@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
 import "./interface/IWallet.sol";
 import "./interface/IWalletFactory.sol";
@@ -17,10 +18,11 @@ import "./interface/IVersionedContract.sol";
  * @dev Administrative and orchestrator contract for local currencies
  *
  * @author Aaron Boyd <https://github.com/aaronmboyd>
+ * @author Sebastian Gerske <https://github.com/h34d>
  */
 contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
     using SafeMath for uint256;
-    using SafeERC20 for IERC20;
+    using SafeERC20 for ERC20PresetMinterPauser;
     using EnumerableMap for EnumerableMap.UintToAddressMap;
 
     /**
@@ -39,7 +41,7 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
      */
     event FactoryUpdated(address indexed _oldFactoryAddress, address indexed _newFactoryAddress);
 
-    IERC20 public erc20Token;
+    ERC20PresetMinterPauser public erc20Token;
     IWalletFactory public walletFactory;
 
     // Mapping of Wallet identifiers to their contract address
@@ -50,12 +52,8 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
      *
      * @param _erc20Token token used
      */
-    constructor(
-        address _erc20Token,
-        address _walletFactory
-    )
-    {
-        erc20Token = IERC20(_erc20Token);
+    constructor(address _erc20Token, address _walletFactory) {
+        erc20Token = ERC20PresetMinterPauser(_erc20Token);
         walletFactory = IWalletFactory(_walletFactory);
     }
 
@@ -101,6 +99,11 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
         _;
     }
 
+    modifier userExist(bytes32 _userId) {
+        require(wallets.contains(uint256(_userId)), "ERR_USER_NOT_EXISTS");
+        _;
+    }
+
     /**
      * @notice Public update to a new Wallet Factory
      *
@@ -133,43 +136,80 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
     }
 
     /**
-     * @notice Settles an amount for a wallet and transfers to the wallet contract
+     * @notice Transfers a local currency token between two existing wallets
      *
-     * @param _userId       User identifier
-     * @param _txId         Raw transaction ID for this event
-     * @param _value        Amount to settle
+     * @param _fromUserId   User identifier
+     * @param _toUserId     Receiver identifier
+     * @param _value        Amount to transfer
      */
-    function settle(
-        bytes32 _userId,
-        string calldata _txId,
+    function transferTo(
+        bytes32 _fromUserId,
+        bytes32 _toUserId,
         uint256 _value
     )
         external
         greaterThanZero(_value)
-        balanceAvailable(_userId, _value)
+        userExist(_fromUserId)
+        balanceAvailable(_fromUserId, _value)
+        userExist(_toUserId)
         onlyOwner
         nonReentrant
         whenNotPaused
+        returns (bool)
     {
-        _settle(uint256(_userId), _txId, _value);
+        return _transferTo(_fromUserId, _toUserId, _value);
     }
 
     /**
-     * @notice Settles an amount for a wallet and transfers to the wallet contract
-     * @dev Implementation of external "settle" function so that it may be called internally without reentrancy guard incrementing
+     * @notice Internal implementation of transferring a local currency token between two existing wallets
+     * @dev Implementation of external "transferTo" function so that it may be called internally without reentrancy guard incrementing
      *
-     * @param _userId       User identifier
-     * @param _txId         Raw transaction ID for this event
-     * @param _value        Amount to settle
+     * @param _fromUserId   User identifier
+     * @param _toUserId     Receiver identifier
+     * @param _value        Amount to transfer
      */
-    function _settle(
-        uint256 _userId,
-        string calldata _txId,
+    function _transferTo(
+        bytes32 _fromUserId,
+        bytes32 _toUserId,
         uint256 _value
-    ) private {
-        address tmpWalletAddress = wallets.get(_userId);
-        IWallet user = IWallet(tmpWalletAddress);
-        user.settle(_txId, _value);
+    ) private returns (bool) {
+        IWallet fromWallet = IWallet(getWalletAddress(_fromUserId));
+        IWallet toWallet = IWallet(getWalletAddress(_toUserId));
+
+        return fromWallet.transferTo(toWallet, _value);
+    }
+
+    /**
+     * @notice Deposits tokens in the wallet identified by the given user id
+     *
+     * @param _userId   User identifier
+     * @param _value    Amount to transfer
+     */
+    function deposit(bytes32 _userId, uint256 _value)
+        external
+        greaterThanZero(_value)
+        userExist(_userId)
+        onlyOwner
+        nonReentrant
+        whenNotPaused
+        returns (bool)
+    {
+        return _deposit(_userId, _value);
+    }
+
+    /**
+     * @notice Internal implementation of deposits tokens in the wallet identified by the given user id
+     *
+     * @param _userId   User identifier
+     * @param _value    Amount to transfer
+     */
+    function _deposit(bytes32 _userId, uint256 _value) private returns (bool) {
+        address tmpWalletAddress = getWalletAddress(_userId);
+        (bool success, ) = address(erc20Token).call(
+            abi.encodeWithSignature("mint(address,uint256)", tmpWalletAddress, _value)
+        );
+
+        return success;
     }
 
     /**
@@ -177,18 +217,19 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
      *
      * @param _userId user identifier
      */
-    function newWallet(string calldata _userId)
+    function newWallet(bytes32 _userId)
         external
         onlyOwner
         nonReentrant
         whenNotPaused
-        userNotExist(keccak256(bytes(_userId)))
+        userNotExist(_userId)
     {
         address newWalletAddress = walletFactory.createProxiedWallet(_userId);
-        bytes32 key = keccak256(bytes(_userId));
-        wallets.set(uint256(key), newWalletAddress);
+        require(newWalletAddress != address(0x0), "ERR_WALLET_FAILED");
 
-        emit NewUser(key, newWalletAddress);
+        wallets.set(uint256(_userId), newWalletAddress);
+
+        emit NewUser(_userId, newWalletAddress);
     }
 
     /**
@@ -197,8 +238,8 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
      * @param _userId user identifier
      * @return address of user's contract
      */
-    function getWalletAddress(bytes32 _userId) public view returns (address) {
-        return wallets.get(uint256(_userId), "ERR_USER_NOT_EXIST");
+    function getWalletAddress(bytes32 _userId) public view userExist(_userId) returns (address) {
+        return wallets.get(uint256(_userId));
     }
 
     /**
@@ -229,7 +270,7 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
     }
 
     /**
-     * @notice Update implementation address for beneficiaries
+     * @notice Update implementation address for wallets
      *
      * @param _newLogic New implementation logic for wallet proxies
      *
@@ -262,7 +303,6 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
         _unpause();
     }
 
-
     /**
      * @notice Emergency withdrawal of all remaining token to the owner account
      *
@@ -276,7 +316,7 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
 
     /**
      * @notice Get wallet address at index
-     * @dev Used for iterating the complete list of beneficiaries
+     * @dev Used for iterating the complete list of wallets
      *
      */
     function getWalletAddressAtIndex(uint256 _index) external view returns (address) {
@@ -288,7 +328,7 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
     }
 
     /**
-     * @notice Get count of beneficiaries
+     * @notice Get count of wallets
      *
      */
     function getWalletCount() external view returns (uint256) {

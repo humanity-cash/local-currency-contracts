@@ -16,31 +16,18 @@ import "./interface/IVersionedContract.sol";
  * @dev A simple wallet contract to hold specific ERC20 tokens that is controlled by an owner
  *
  * @author Aaron Boyd <https://github.com/aaronmboyd>
+ * @author Sebastian Gerske <https://github.com/h34d>
  */
-contract Wallet is
-    IVersionedContract,
-    IWallet,
-    AccessControl,
-    Initializable,
-    ReentrancyGuard
-{
+contract Wallet is IVersionedContract, IWallet, AccessControl, Initializable, ReentrancyGuard {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
     IERC20 public erc20Token;
     uint256 public createdBlock;
-    string public userId;
+    bytes32 public userId;
 
     bytes32 public constant CONTROLLER_ROLE = keccak256("CONTROLLER_ROLE");
     bytes32 public constant FACTORY_ROLE = keccak256("FACTORY_ROLE");
-
-    struct Settlement {
-        uint256 value;
-        string txId;
-    }
-
-    mapping(bytes32 => Settlement) private settlements;
-    bytes32[] private settlementKeys;
 
     /**
      * @notice Returns the storage, major, minor, and patch version of the contract.
@@ -79,7 +66,7 @@ contract Wallet is
     function initialize(
         address _erc20Token,
         address _controller,
-        string memory _userId
+        bytes32 _userId
     ) external override initializer {
         erc20Token = IERC20(_erc20Token);
         createdBlock = block.number;
@@ -91,32 +78,6 @@ contract Wallet is
     }
 
     /**
-     * @notice Return array of settlementKeys
-     *
-     * @dev Note this is marked external, you cannot return dynamically sized data target is a Web3 caller for iterating Settlements
-     *
-     */
-    function getSettlementKeys() external view override returns (bytes32[] memory) {
-        return settlementKeys;
-    }
-
-    /**
-     * @notice Return the primitive attributes of an Settlement struct
-     *
-     * @param _key Map key of the Settlement to return
-     *
-     */
-    function getSettlementAtKey(bytes32 _key)
-        external
-        view
-        override
-        returns (uint256, string memory)
-    {
-        Settlement memory s = settlements[_key];
-        return (s.value, s.txId);
-    }
-
-    /**
      * @notice retrieve available balance for this contract
      *
      * @return uint256 usable balance for this contract
@@ -125,30 +86,24 @@ contract Wallet is
         return erc20Token.balanceOf(address(this));
     }
 
-
     /**
-     * @notice Perform a settlement by returning token to the wallet contract
+     * @notice Performs a transfer from one wall to another
      *
-     * @param _txId Dynamic string txId of the transaction to authorize
-     * @param _value uint256 transaction amount
-     *
-     * @dev If there was an existing authorization for this txId, de-authorize it, for the original authorization amount, regardless of the current settlement amount
+     * @param _toWallet     IWallet wallet to transfer to
+     * @param _value        uint256 transaction amount
      *
      */
-    function settle(
-        string calldata _txId,
-        uint256 _value
-    ) external override onlyController(msg.sender) nonReentrant {
-        bytes32 key = keccak256(bytes(_txId));
-        require(settlements[key].value == 0, "ERR_SETTLE_EXISTS");
-
-        // Then perform settlement
-        settlementKeys.push(key);
-        Settlement storage newSettle = settlements[key];
-        newSettle.txId = _txId;
-        newSettle.value = _value;
-
-        emit SettlementEvent(keccak256(bytes(userId)), address(this), _txId, _value);
+    function transferTo(IWallet _toWallet, uint256 _value)
+        external
+        override
+        onlyController(msg.sender)
+        nonReentrant
+        returns (bool)
+    {
+        address toWalletAddress = address(_toWallet);
+        bool success = erc20Token.transfer(toWalletAddress, _value);
+        emit TransferToEvent(userId, Wallet(toWalletAddress).userId(), _value);
+        return success;
     }
 
     /**

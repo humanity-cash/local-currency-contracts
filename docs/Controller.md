@@ -24,8 +24,14 @@ Enforces a _userId should not be mapped to an existing user / contract address
 
 
 
+### `userExist(bytes32 _userId)`
 
-### `constructor(address _erc20Token, address _factory)` (public)
+
+
+
+
+
+### `constructor(address _erc20Token, address _walletFactory)` (public)
 
 Used to initialize a new Controller contract
 
@@ -56,15 +62,23 @@ Retrieves the available balance of a wallet
 
 
 
-### `settle(bytes32 _userId, string _txId, uint256 _value)` (external)
+### `transferTo(bytes32 _fromUserId, bytes32 _toUserId, uint256 _value) → bool` (external)
 
-Settles an amount for a wallet and transfers to the wallet contract
-
-
+Transfers a local currency token between two existing wallets
 
 
 
-### `newWallet(string _userId)` (external)
+
+
+### `deposit(bytes32 _userId, uint256 _value) → bool` (external)
+
+Deposits tokens in the wallet identified by the given user id
+
+
+
+
+
+### `newWallet(bytes32 _userId)` (external)
 
 create a new user and assign them a wallet contract
 
@@ -80,21 +94,29 @@ retrieve contract address for a Wallet
 
 
 
-### `transferOwnership(address newOwner)` (public)
+### `transferContractOwnership(address newOwner)` (public)
 
 Transfers ownership of the contract to a new account (`newOwner`).
 Can only be called by the current owner.
 
 
 
-In this override, we iterate all the existing Wallet contracts
-and change their owner before changing the owner of the core contract
+
+
+
+### `transferWalletOwnership(address newOwner, bytes32 userId)` (public)
+
+Transfers ownership of the wallet to a new account (`newOwner`).
+Can only be called by the current owner.
+
+
+
 
 
 
 ### `updateWalletImplementation(address _newLogic)` (external)
 
-Update implementation address for beneficiaries
+Update implementation address for wallets
 
 
 
@@ -130,12 +152,12 @@ Sends erc20 to current owner
 Get wallet address at index
 
 
-Used for iterating the complete list of beneficiaries
+Used for iterating the complete list of wallets
 
 
 ### `getWalletCount() → uint256` (external)
 
-Get count of beneficiaries
+Get count of wallets
 
 
 
