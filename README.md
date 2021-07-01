@@ -33,10 +33,12 @@ Generate with `yarn doc`
 
 | Contract      | Address                                      |
 |---------------|----------------------------------------------|
-| UBIController | `0x307D068DBADbd9CB8BD397917Be42e23FAb4880F` |
+| Controller    | `0x0148A386d34d54078416ba9c7367BD41fF6fA663` |
+| Token         | `0xFE161AAd1eE51a18bFfCf6620D9065eA3280E04d` |
 
 ### Baklava Celo Testnet
 
 | Contract      | Address                                      |
 |---------------|----------------------------------------------|
-| UBIController | `0x3d29428E0e096d8d338e02e3F625313689A627f6` |
+| Controller    | `0xf8BCD6AC808816CdB5C950e2b1F17593f4759eB3` |
+| Token         | `0xA5D6D2352eB1DE443B7aa8ef376Dd43f2054eC26` |
