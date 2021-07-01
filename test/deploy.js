@@ -14,7 +14,7 @@ module.exports.deploy = async () => {
 
 	await walletFactory.transferOwnership(controller.address);
 
-	await token.grantRole(utils.toHex("MINTER_ROLE"), controller.address);
+	await token.grantRole(utils.keccak256("MINTER_ROLE"), controller.address);
 
 	return {
 		wallet,

@@ -21,8 +21,10 @@ contract("Controller.Deposit", async (accounts) => {
 		await controller.newWallet(user);
 
 		await controller.deposit(user, oneToken);
-
-		console.log((await controller.balanceOfWallet(user)).toString());
+		assert.equal(
+			(await controller.balanceOfWallet(user)).toString(),
+			oneToken
+		);
 	});
 
 	it("Should fail to deposit from someone", async () => {

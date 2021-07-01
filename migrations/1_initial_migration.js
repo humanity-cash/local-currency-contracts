@@ -55,7 +55,7 @@ module.exports = (deployer, network, accounts) => {
 				utils.toWei("10000000", "ether")
 			);
 			await token.grantRole(
-				utils.toHex("MINTER_ROLE"),
+				utils.keccak256("MINTER_ROLE"),
 				controller.address
 			);
 		}

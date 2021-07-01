@@ -205,11 +205,8 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
      */
     function _deposit(bytes32 _userId, uint256 _value) private returns (bool) {
         address tmpWalletAddress = getWalletAddress(_userId);
-        (bool success, ) = address(erc20Token).call(
-            abi.encodeWithSignature("mint(address,uint256)", tmpWalletAddress, _value)
-        );
-
-        return success;
+        erc20Token.mint(tmpWalletAddress, _value);
+        return true;
     }
 
     /**
