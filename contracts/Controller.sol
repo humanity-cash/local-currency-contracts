@@ -179,6 +179,12 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
         return fromWallet.transferTo(toWallet, _value);
     }
 
+    /**
+     * @notice Deposits tokens in the wallet identified by the given user id
+     *
+     * @param _userId   User identifier
+     * @param _value    Amount to transfer
+     */
     function deposit(bytes32 _userId, uint256 _value)
         external
         greaterThanZero(_value)
@@ -191,6 +197,12 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
         return _deposit(_userId, _value);
     }
 
+    /**
+     * @notice Internal implementation of deposits tokens in the wallet identified by the given user id
+     *
+     * @param _userId   User identifier
+     * @param _value    Amount to transfer
+     */
     function _deposit(bytes32 _userId, uint256 _value) private returns (bool) {
         address tmpWalletAddress = getWalletAddress(_userId);
         (bool success, ) = address(erc20Token).call(

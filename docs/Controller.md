@@ -72,6 +72,8 @@ Transfers a local currency token between two existing wallets
 
 ### `deposit(bytes32 _userId, uint256 _value) → bool` (external)
 
+Deposits tokens in the wallet identified by the given user id
+
 
 
 
