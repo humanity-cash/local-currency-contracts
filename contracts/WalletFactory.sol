@@ -51,7 +51,7 @@ contract WalletFactory is IVersionedContract, IWalletFactory, Ownable {
      *
      */
     function createProxiedWallet(bytes32 _userId) external override returns (address) {
-        require(_userId.length > 0, "ERR_NO_USER_ID");
+        require(_userId != "", "ERR_NO_USER_ID");
         require(address(wallet) != address(0), "ERR_NO_WALLET");
         require(address(proxyAdmin) != address(0), "ERR_NO_PROXY_ADMIN");
 
