@@ -49,10 +49,14 @@ module.exports = (deployer, network, accounts) => {
 		await walletFactory.transferOwnership(controller.address);
 
 		// If we are local, mint some fake token to play with for the controller
-		if (network === "local") {
+		if (token) {
 			await token.mint(
 				controller.address,
 				utils.toWei("10000000", "ether")
+			);
+			await token.grantRole(
+				utils.toHex("MINTER_ROLE"),
+				controller.address
 			);
 		}
 
