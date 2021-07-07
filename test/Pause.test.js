@@ -1,22 +1,17 @@
 /* global it, before */
+const { uuid } = require("uuidv4");
+const { toBytes32 } = require("./toBytes32");
 const truffleAssert = require("truffle-assertions");
-const { oneHundredTokens, oneToken, zeroTokens } = require("./constants");
+const { oneToken, zeroTokens } = require("./constants");
 const { deploy } = require("./deploy");
 
 contract("Controller.Pause", async (accounts) => {
-	const [, someone, user1, user2] = accounts;
+	const [, operator1, , , , someone, user1, user2] = accounts;
 
 	let deployment;
 
 	before(async () => {
-		deployment = await deploy();
-
-		const { token, controller } = deployment;
-
-		await token.mint(controller.address, oneToken);
-
-		await token.mint(user1, oneHundredTokens);
-		await token.mint(user2, oneHundredTokens);
+		deployment = await deploy(accounts);
 	});
 
 	it("Should be able to pause", async () => {
@@ -30,8 +25,17 @@ contract("Controller.Pause", async (accounts) => {
 	});
 
 	it("Should be able to transfer tokens even when controller is paused", async () => {
-		const { token } = deployment;
+		const { controller, token } = await deploy(accounts);
 
+		const tmpUser = toBytes32(uuid());
+		await controller.newWallet(tmpUser, { from: operator1 });
+		await controller.deposit(tmpUser, oneToken, { from: operator1 });
+		await controller.methods["transfer(bytes32,address,uint256)"](
+			tmpUser,
+			user1,
+			oneToken,
+			{ from: operator1 }
+		);
 		await token.transfer(user2, oneToken, { from: user1 });
 		await token.transfer(user1, oneToken, { from: user2 });
 	});
@@ -50,7 +54,17 @@ contract("Controller.Pause", async (accounts) => {
 	});
 
 	it("Should be able to emergency withdraw after pausing", async () => {
-		const { controller, token } = deployment;
+		const { controller, token } = await deploy(accounts);
+
+		const tmpUser = toBytes32(uuid());
+		await controller.newWallet(tmpUser, { from: operator1 });
+		await controller.deposit(tmpUser, oneToken, { from: operator1 });
+		await controller.methods["transfer(bytes32,address,uint256)"](
+			tmpUser,
+			controller.address,
+			oneToken,
+			{ from: operator1 }
+		);
 
 		const controllerBalanceOfOld = await token.balanceOf(
 			controller.address
@@ -77,7 +91,7 @@ contract("Controller.Pause", async (accounts) => {
 	});
 
 	it("Should fail to emergency withdraw when called from someone", async () => {
-		const { controller } = await deploy();
+		const { controller } = await deploy(accounts);
 		await controller.pause();
 		await truffleAssert.reverts(
 			controller.withdrawToOwner({ from: someone }),

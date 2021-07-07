@@ -6,12 +6,12 @@ const { uuid } = require("uuidv4");
 const { deploy } = require("./deploy");
 
 contract("Controller", async (accounts) => {
-	const [owner, someone] = accounts;
+	const [owner, operator1, , , , someone] = accounts;
 
 	let deployment;
 
 	before(async () => {
-		deployment = await deploy();
+		deployment = await deploy(accounts);
 	});
 
 	it("Should read public attributes for important internal addresses", async () => {
@@ -37,9 +37,9 @@ contract("Controller", async (accounts) => {
 		const { controller } = deployment;
 
 		const newLogic = await Wallet.new();
-		await controller.newWallet(toBytes32(uuid()));
-		await controller.newWallet(toBytes32(uuid()));
-		await controller.newWallet(toBytes32(uuid()));
+		await controller.newWallet(toBytes32(uuid()), { from: operator1 });
+		await controller.newWallet(toBytes32(uuid()), { from: operator1 });
+		await controller.newWallet(toBytes32(uuid()), { from: operator1 });
 		await controller.updateWalletImplementation(newLogic.address);
 	});
 
@@ -51,7 +51,7 @@ contract("Controller", async (accounts) => {
 			wallet.address
 		);
 		await controller.setWalletFactory(newFactory.address);
-		await controller.newWallet(toBytes32(uuid()));
+		await controller.newWallet(toBytes32(uuid()), { from: operator1 });
 	});
 
 	it("Should be able to transfer ownership", async () => {
@@ -61,9 +61,9 @@ contract("Controller", async (accounts) => {
 		let user2 = toBytes32(uuid());
 		let user3 = toBytes32(uuid());
 
-		await controller.newWallet(user1);
-		await controller.newWallet(user2);
-		await controller.newWallet(user3);
+		await controller.newWallet(user1, { from: operator1 });
+		await controller.newWallet(user2, { from: operator1 });
+		await controller.newWallet(user3, { from: operator1 });
 		await controller.transferWalletOwnership(someone, user3);
 		await controller.transferWalletOwnership(someone, user2);
 		await controller.transferWalletOwnership(someone, user1);

@@ -2,34 +2,27 @@
 const Wallet = artifacts.require("Wallet");
 const truffleAssert = require("truffle-assertions");
 const { uuid } = require("uuidv4");
-const { oneToken } = require("./constants");
 const { deploy } = require("./deploy");
 const { toBytes32 } = require("./toBytes32");
 
-contract("User Management", async () => {
+contract("User Management", async (accounts) => {
+	const [, operator1] = accounts;
 	let deployment, userId;
 
 	before(async () => {
-		deployment = await deploy();
+		deployment = await deploy(accounts);
 
 		const { controller } = deployment;
 
 		userId = toBytes32(uuid());
-		await controller.newWallet(userId);
-	});
-
-	it("Should verify Controller contract has token balance", async () => {
-		const { token, controller } = deployment;
-		await token.mint(controller.address, oneToken);
-		const balance = await token.balanceOf(controller.address);
-		assert.equal(balance.toString(), oneToken);
+		await controller.newWallet(userId, { from: operator1 });
 	});
 
 	it("Should not create a user that already exists", async () => {
 		const { controller } = deployment;
 
 		await truffleAssert.fails(
-			controller.newWallet(userId),
+			controller.newWallet(userId, { from: operator1 }),
 			truffleAssert.ErrorType.REVERT
 		);
 	});
@@ -38,10 +31,10 @@ contract("User Management", async () => {
 		const { controller } = deployment;
 
 		let user2 = toBytes32(uuid());
-		await controller.newWallet(user2);
+		await controller.newWallet(user2, { from: operator1 });
 
 		let user3 = toBytes32(uuid());
-		await controller.newWallet(user3);
+		await controller.newWallet(user3, { from: operator1 });
 
 		const walletCount = await controller.getWalletCount();
 		assert.equal(walletCount, 3);
