@@ -20,10 +20,19 @@ import "./interface/IVersionedContract.sol";
  * @author Aaron Boyd <https://github.com/aaronmboyd>
  * @author Sebastian Gerske <https://github.com/h34d>
  */
-contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
+contract Controller is
+    IVersionedContract,
+    AccessControlEnumerable,
+    Ownable,
+    Pausable,
+    ReentrancyGuard
+{
     using SafeMath for uint256;
     using SafeERC20 for ERC20PresetMinterPauser;
     using EnumerableMap for EnumerableMap.UintToAddressMap;
+
+    bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
+    bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
 
     /**
      * @notice Triggered when a new user has been created
@@ -52,10 +61,20 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
      *
      * @param _erc20Token token used
      */
-    constructor(address _erc20Token, address _walletFactory) {
+    constructor(address _erc20Token, address _walletFactory) Ownable() {
+        _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
+        _setupRole(ADMIN_ROLE, _msgSender());
+        _setupRole(OPERATOR_ROLE, _msgSender());
+
         erc20Token = ERC20PresetMinterPauser(_erc20Token);
         walletFactory = IWalletFactory(_walletFactory);
     }
+
+    /**********************************************************************
+     *
+     * View Methods
+     *
+     **********************************************************************/
 
     /**
      * @notice Returns the storage, major, minor, and patch version of the contract.
@@ -99,28 +118,12 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
         _;
     }
 
+    /**
+     * @notice Enforces a _userId exists
+     */
     modifier userExist(bytes32 _userId) {
         require(wallets.contains(uint256(_userId)), "ERR_USER_NOT_EXISTS");
         _;
-    }
-
-    /**
-     * @notice Public update to a new Wallet Factory
-     *
-     * @param _newFactoryAddress   new factory address
-     */
-    function setWalletFactory(address _newFactoryAddress) external onlyOwner {
-        _setWalletFactory(_newFactoryAddress);
-    }
-
-    /**
-     * @notice Internal implementation of update to a new Wallet Factory
-     *
-     * @param _newFactoryAddress   new factory address
-     */
-    function _setWalletFactory(address _newFactoryAddress) private {
-        walletFactory = IWalletFactory(_newFactoryAddress);
-        emit FactoryUpdated(address(walletFactory), _newFactoryAddress);
     }
 
     /**
@@ -131,9 +134,56 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
      */
     function balanceOfWallet(bytes32 _userId) public view returns (uint256) {
         address walletAddress = wallets.get(uint256(_userId));
-        IWallet wallet = IWallet(walletAddress);
+        return balanceOfWallet(walletAddress);
+    }
+
+    /**
+     * @notice Retrieves the available balance of a wallet
+     *
+     * @param _walletAddress wallet address
+     * @return uint256 available balance
+     */
+    function balanceOfWallet(address _walletAddress) public view returns (uint256) {
+        IWallet wallet = IWallet(_walletAddress);
         return wallet.availableBalance();
     }
+
+    /**
+     * @notice retrieve contract address for a Wallet
+     *
+     * @param _userId user identifier
+     * @return address of user's contract
+     */
+    function getWalletAddress(bytes32 _userId) public view userExist(_userId) returns (address) {
+        return wallets.get(uint256(_userId));
+    }
+
+    /**
+     * @notice Get wallet address at index
+     * @dev Used for iterating the complete list of wallets
+     *
+     */
+    function getWalletAddressAtIndex(uint256 _index) external view returns (address) {
+        // .at function returns a tuple of (uint256, address)
+        address walletAddress;
+        (, walletAddress) = wallets.at(_index);
+
+        return walletAddress;
+    }
+
+    /**
+     * @notice Get count of wallets
+     *
+     */
+    function getWalletCount() external view returns (uint256) {
+        return wallets.length();
+    }
+
+    /**********************************************************************
+     *
+     * Operator Methods
+     *
+     **********************************************************************/
 
     /**
      * @notice Transfers a local currency token between two existing wallets
@@ -142,7 +192,7 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
      * @param _toUserId     Receiver identifier
      * @param _value        Amount to transfer
      */
-    function transferTo(
+    function transfer(
         bytes32 _fromUserId,
         bytes32 _toUserId,
         uint256 _value
@@ -152,31 +202,45 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
         userExist(_fromUserId)
         balanceAvailable(_fromUserId, _value)
         userExist(_toUserId)
-        onlyOwner
+        onlyRole(OPERATOR_ROLE)
         nonReentrant
         whenNotPaused
         returns (bool)
     {
-        return _transferTo(_fromUserId, _toUserId, _value);
+        return _transfer(getWalletAddress(_fromUserId), getWalletAddress(_toUserId), _value);
+    }
+
+    function transfer(
+        bytes32 _fromUserId,
+        address _toAddress,
+        uint256 _value
+    )
+        external
+        greaterThanZero(_value)
+        userExist(_fromUserId)
+        balanceAvailable(_fromUserId, _value)
+        onlyRole(OPERATOR_ROLE)
+        nonReentrant
+        whenNotPaused
+        returns (bool)
+    {
+        return _transfer(getWalletAddress(_fromUserId), _toAddress, _value);
     }
 
     /**
      * @notice Internal implementation of transferring a local currency token between two existing wallets
      * @dev Implementation of external "transferTo" function so that it may be called internally without reentrancy guard incrementing
      *
-     * @param _fromUserId   User identifier
-     * @param _toUserId     Receiver identifier
+     * @param _fromWallet   Sender wallet
+     * @param _toWallet     Receiver wallet
      * @param _value        Amount to transfer
      */
-    function _transferTo(
-        bytes32 _fromUserId,
-        bytes32 _toUserId,
+    function _transfer(
+        address _fromWallet,
+        address _toWallet,
         uint256 _value
     ) private returns (bool) {
-        IWallet fromWallet = IWallet(getWalletAddress(_fromUserId));
-        IWallet toWallet = IWallet(getWalletAddress(_toUserId));
-
-        return fromWallet.transferTo(toWallet, _value);
+        return IWallet(_fromWallet).transferTo(IWallet(_toWallet), _value);
     }
 
     /**
@@ -189,7 +253,7 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
         external
         greaterThanZero(_value)
         userExist(_userId)
-        onlyOwner
+        onlyRole(OPERATOR_ROLE)
         nonReentrant
         whenNotPaused
         returns (bool)
@@ -216,7 +280,7 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
      */
     function newWallet(bytes32 _userId)
         external
-        onlyOwner
+        onlyRole(OPERATOR_ROLE)
         nonReentrant
         whenNotPaused
         userNotExist(_userId)
@@ -229,14 +293,29 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
         emit NewUser(_userId, newWalletAddress);
     }
 
-    /**
-     * @notice retrieve contract address for a Wallet
+    /**********************************************************************
      *
-     * @param _userId user identifier
-     * @return address of user's contract
+     * Owner Methods
+     *
+     **********************************************************************/
+
+    /**
+     * @notice Public update to a new Wallet Factory
+     *
+     * @param _newFactoryAddress   new factory address
      */
-    function getWalletAddress(bytes32 _userId) public view userExist(_userId) returns (address) {
-        return wallets.get(uint256(_userId));
+    function setWalletFactory(address _newFactoryAddress) external onlyOwner {
+        _setWalletFactory(_newFactoryAddress);
+    }
+
+    /**
+     * @notice Internal implementation of update to a new Wallet Factory
+     *
+     * @param _newFactoryAddress   new factory address
+     */
+    function _setWalletFactory(address _newFactoryAddress) private {
+        walletFactory = IWalletFactory(_newFactoryAddress);
+        emit FactoryUpdated(address(walletFactory), _newFactoryAddress);
     }
 
     /**
@@ -309,26 +388,5 @@ contract Controller is IVersionedContract, Ownable, Pausable, ReentrancyGuard {
     function withdrawToOwner() external onlyOwner whenPaused nonReentrant {
         uint256 balanceOf = erc20Token.balanceOf(address(this));
         erc20Token.transfer(owner(), balanceOf);
-    }
-
-    /**
-     * @notice Get wallet address at index
-     * @dev Used for iterating the complete list of wallets
-     *
-     */
-    function getWalletAddressAtIndex(uint256 _index) external view returns (address) {
-        // .at function returns a tuple of (uint256, address)
-        address walletAddress;
-        (, walletAddress) = wallets.at(_index);
-
-        return walletAddress;
-    }
-
-    /**
-     * @notice Get count of wallets
-     *
-     */
-    function getWalletCount() external view returns (uint256) {
-        return wallets.length();
     }
 }

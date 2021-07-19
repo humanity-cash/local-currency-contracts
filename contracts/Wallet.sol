@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
 import "./interface/IWallet.sol";
 import "./interface/IVersionedContract.sol";
 
@@ -21,13 +22,19 @@ import "./interface/IVersionedContract.sol";
 contract Wallet is IVersionedContract, IWallet, AccessControl, Initializable, ReentrancyGuard {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
+    using Address for address;
 
     IERC20 public erc20Token;
     uint256 public createdBlock;
     bytes32 public userId;
 
     bytes32 public constant CONTROLLER_ROLE = keccak256("CONTROLLER_ROLE");
-    bytes32 public constant FACTORY_ROLE = keccak256("FACTORY_ROLE");
+
+    /**********************************************************************
+     *
+     * View Methods
+     *
+     **********************************************************************/
 
     /**
      * @notice Returns the storage, major, minor, and patch version of the contract.
@@ -49,12 +56,19 @@ contract Wallet is IVersionedContract, IWallet, AccessControl, Initializable, Re
     }
 
     /**
-     * @notice Enforces only controller can perform action
+     * @notice retrieve available balance for this contract
+     *
+     * @return uint256 usable balance for this contract
      */
-    modifier onlyController(address operator) {
-        require(hasRole(CONTROLLER_ROLE, operator), "ERR_ONLY_CONTROLLER");
-        _;
+    function availableBalance() external view override returns (uint256) {
+        return erc20Token.balanceOf(address(this));
     }
+
+    /**********************************************************************
+     *
+     * Public Methods
+     *
+     **********************************************************************/
 
     /**
      * @notice used to initialize a new Wallet contract
@@ -72,19 +86,15 @@ contract Wallet is IVersionedContract, IWallet, AccessControl, Initializable, Re
         createdBlock = block.number;
         userId = _userId;
 
-        _setupRole(CONTROLLER_ROLE, _controller);
         _setupRole(DEFAULT_ADMIN_ROLE, _controller);
-        _setupRole(FACTORY_ROLE, msg.sender);
+        _setupRole(CONTROLLER_ROLE, _controller);
     }
 
-    /**
-     * @notice retrieve available balance for this contract
+    /**********************************************************************
      *
-     * @return uint256 usable balance for this contract
-     */
-    function availableBalance() external view override returns (uint256) {
-        return erc20Token.balanceOf(address(this));
-    }
+     * Owner Methods
+     *
+     **********************************************************************/
 
     /**
      * @notice Performs a transfer from one wall to another
@@ -96,13 +106,22 @@ contract Wallet is IVersionedContract, IWallet, AccessControl, Initializable, Re
     function transferTo(IWallet _toWallet, uint256 _value)
         external
         override
-        onlyController(msg.sender)
+        onlyRole(CONTROLLER_ROLE)
         nonReentrant
         returns (bool)
     {
-        address toWalletAddress = address(_toWallet);
-        bool success = erc20Token.transfer(toWalletAddress, _value);
-        emit TransferToEvent(userId, Wallet(toWalletAddress).userId(), _value);
+        address toAddress = address(_toWallet);
+        bool success = erc20Token.transfer(toAddress, _value);
+
+        if (
+            toAddress.isContract() &&
+            Wallet(toAddress).supportsInterface(bytes4(keccak256("userId()")))
+        ) {
+            emit TransferToEvent(userId, Wallet(toAddress).userId(), _value);
+        } else {
+            emit TransferToEvent(userId, toAddress, _value);
+        }
+
         return success;
     }
 
@@ -115,7 +134,7 @@ contract Wallet is IVersionedContract, IWallet, AccessControl, Initializable, Re
     function transferController(address _newController)
         external
         override
-        onlyController(msg.sender)
+        onlyRole(CONTROLLER_ROLE)
     {
         grantRole(DEFAULT_ADMIN_ROLE, _newController);
         grantRole(CONTROLLER_ROLE, _newController);

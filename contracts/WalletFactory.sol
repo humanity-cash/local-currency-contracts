@@ -13,7 +13,7 @@ contract WalletFactory is IVersionedContract, IWalletFactory, Ownable {
     using SafeERC20 for IERC20;
 
     ProxyAdmin private proxyAdmin;
-    IWallet private wallet;
+    IWallet private walletTemplate;
     IERC20 private erc20Token;
 
     /**
@@ -23,7 +23,7 @@ contract WalletFactory is IVersionedContract, IWalletFactory, Ownable {
     constructor(address _erc20Token, address _wallet) {
         proxyAdmin = new ProxyAdmin();
         erc20Token = IERC20(_erc20Token);
-        wallet = IWallet(_wallet);
+        walletTemplate = IWallet(_wallet);
     }
 
     /**
@@ -52,11 +52,11 @@ contract WalletFactory is IVersionedContract, IWalletFactory, Ownable {
      */
     function createProxiedWallet(bytes32 _userId) external override returns (address) {
         require(_userId != "", "ERR_NO_USER_ID");
-        require(address(wallet) != address(0), "ERR_NO_WALLET");
+        require(address(walletTemplate) != address(0), "ERR_NO_WALLET_TEMPLATE");
         require(address(proxyAdmin) != address(0), "ERR_NO_PROXY_ADMIN");
 
         TransparentUpgradeableProxy walletProxy = new TransparentUpgradeableProxy(
-            address(wallet),
+            address(walletTemplate),
             address(proxyAdmin),
             abi.encodeWithSignature(
                 "initialize(address,address,bytes32)",

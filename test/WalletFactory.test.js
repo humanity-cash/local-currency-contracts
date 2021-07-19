@@ -11,7 +11,7 @@ contract("WalletFactory", async (accounts) => {
 	let deployment;
 
 	before(async () => {
-		deployment = await deploy();
+		deployment = await deploy(accounts);
 	});
 
 	it("Should create a new wallet proxy", async () => {

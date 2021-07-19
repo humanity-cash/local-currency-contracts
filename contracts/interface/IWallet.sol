@@ -20,6 +20,15 @@ interface IWallet {
     event TransferToEvent(bytes32 indexed _fromUserId, bytes32 indexed _toUserId, uint256 _amt);
 
     /**
+     * @notice Triggered when an amount has been transferred from one wallet to another
+     *
+     * @param _fromUserId       Hashed bytes32 of the sender
+     * @param _toAddress        Address of the receiver
+     * @param _amt              Amount of the transaction
+     */
+    event TransferToEvent(bytes32 indexed _fromUserId, address indexed _toAddress, uint256 _amt);
+
+    /**
      * @notice Used to initialize a new Wallet contract
      *
      * @param _erc20token token used

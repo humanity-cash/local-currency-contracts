@@ -2,11 +2,11 @@
 const truffleAssert = require("truffle-assertions");
 const { deploy } = require("./deploy");
 
-contract("Versions", async () => {
+contract("Versions", async (accounts) => {
 	let deployment;
 
 	before(async () => {
-		deployment = await deploy();
+		deployment = await deploy(accounts);
 	});
 
 	it("Should read version numbers of all deployed contracts", async () => {
