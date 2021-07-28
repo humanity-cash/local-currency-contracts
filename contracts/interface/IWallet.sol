@@ -58,6 +58,14 @@ interface IWallet {
     function transferTo(IWallet _toWallet, uint256 _value) external returns (bool);
 
     /**
+     * @notice Performs a withdrawal to the controller
+     *
+     * @param _value        uint256 transaction amount
+     *
+     */
+    function withdraw(uint256 _value) external returns (bool);    
+
+    /**
      * @notice Transfer control of the controller
      *
      * @param _newController New owner address

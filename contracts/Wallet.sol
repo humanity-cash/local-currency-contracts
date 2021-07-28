@@ -126,6 +126,24 @@ contract Wallet is IVersionedContract, IWallet, AccessControl, Initializable, Re
     }
 
     /**
+     * @notice Performs a withdrawal to the controller
+     *
+     * @param _value        uint256 withdrawal amount
+     *
+     */
+    function withdraw(uint256 _value)
+        external
+        override
+        onlyRole(CONTROLLER_ROLE)
+        nonReentrant
+        returns (bool)
+    {
+        bool success = erc20Token.transfer(msg.sender, _value);
+        emit TransferToEvent(userId, msg.sender, _value);
+        return success;
+    }
+
+    /**
      * @notice Transfer control of the controller
      *
      * @param _newController New owner address

@@ -43,6 +43,24 @@ contract Controller is
     event NewUser(bytes32 indexed _userId, address indexed _walletAddress);
 
     /**
+     * @notice Triggered when a user has deposited
+     *
+     * @param _userId           Hashed bytes32 of the userId
+     * @param _operator         Address of the bank operator that fulfilled the deposit
+     * @param _value            Value of the deposit
+     */
+    event UserDeposit(bytes32 indexed _userId, address indexed _operator, uint256 _value);
+
+    /**
+     * @notice Triggered when a user has withdrawn
+     *
+     * @param _userId           Hashed bytes32 of the userId
+     * @param _operator         Address of the bank operator that will fulfill the withdrawal
+     * @param _value            Value of the withdrawal
+     */
+    event UserWithdrawal(bytes32 indexed _userId, address indexed _operator, uint256 _value);    
+
+    /**
      * @notice Triggered when the Wallet Factory is updated
      *
      * @param _oldFactoryAddress   Old factory address
@@ -247,7 +265,7 @@ contract Controller is
      * @notice Deposits tokens in the wallet identified by the given user id
      *
      * @param _userId   User identifier
-     * @param _value    Amount to transfer
+     * @param _value    Amount to deposit
      */
     function deposit(bytes32 _userId, uint256 _value)
         external
@@ -265,11 +283,44 @@ contract Controller is
      * @notice Internal implementation of deposits tokens in the wallet identified by the given user id
      *
      * @param _userId   User identifier
-     * @param _value    Amount to transfer
+     * @param _value    Amount to deposit
      */
     function _deposit(bytes32 _userId, uint256 _value) private returns (bool) {
-        address tmpWalletAddress = getWalletAddress(_userId);
-        erc20Token.mint(tmpWalletAddress, _value);
+        address walletAddress = getWalletAddress(_userId);
+        erc20Token.mint(walletAddress, _value);
+        emit UserDeposit(_userId, msg.sender, _value);
+        return true;
+    }
+
+    /**
+     * @notice Withdraws tokens from the wallet identified by the given user id
+     *
+     * @param _userId   User identifier
+     * @param _value    Amount to withdraw
+     */
+    function withdraw(bytes32 _userId, uint256 _value)
+        external
+        greaterThanZero(_value)
+        userExist(_userId)
+        onlyRole(OPERATOR_ROLE)
+        nonReentrant
+        whenNotPaused
+        returns (bool)
+    {
+        return _withdraw(_userId, _value);
+    }
+
+    /**
+     * @notice Internal implementation of withdraw tokens in the wallet identified by the given user id
+     *
+     * @param _userId   User identifier
+     * @param _value    Amount to withdraw
+     */
+    function _withdraw(bytes32 _userId, uint256 _value) private returns (bool) {
+        address walletAddress = getWalletAddress(_userId);
+        IWallet(walletAddress).withdraw(_value);
+        erc20Token.burn(_value);
+        emit UserWithdrawal(_userId, msg.sender, _value);
         return true;
     }
 
