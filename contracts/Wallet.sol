@@ -7,7 +7,6 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
-import "@openzeppelin/contracts/utils/Address.sol";
 import "./interface/IWallet.sol";
 import "./interface/IVersionedContract.sol";
 
@@ -22,7 +21,6 @@ import "./interface/IVersionedContract.sol";
 contract Wallet is IVersionedContract, IWallet, AccessControl, Initializable, ReentrancyGuard {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
-    using Address for address;
 
     IERC20 public erc20Token;
     uint256 public createdBlock;
@@ -112,16 +110,6 @@ contract Wallet is IVersionedContract, IWallet, AccessControl, Initializable, Re
     {
         address toAddress = address(_toWallet);
         bool success = erc20Token.transfer(toAddress, _value);
-
-        if (
-            toAddress.isContract() &&
-            Wallet(toAddress).supportsInterface(bytes4(keccak256("userId()")))
-        ) {
-            emit TransferToEvent(userId, Wallet(toAddress).userId(), _value);
-        } else {
-            emit TransferToEvent(userId, toAddress, _value);
-        }
-
         return success;
     }
 
@@ -139,7 +127,6 @@ contract Wallet is IVersionedContract, IWallet, AccessControl, Initializable, Re
         returns (bool)
     {
         bool success = erc20Token.transfer(msg.sender, _value);
-        emit TransferToEvent(userId, msg.sender, _value);
         return success;
     }
 

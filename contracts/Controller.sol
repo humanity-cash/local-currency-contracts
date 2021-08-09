@@ -8,6 +8,7 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
+import "@openzeppelin/contracts/utils/Address.sol";
 import "./interface/IWallet.sol";
 import "./interface/IWalletFactory.sol";
 import "./interface/IVersionedContract.sol";
@@ -30,6 +31,7 @@ contract Controller is
     using SafeMath for uint256;
     using SafeERC20 for ERC20PresetMinterPauser;
     using EnumerableMap for EnumerableMap.UintToAddressMap;
+    using Address for address;
 
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
@@ -59,6 +61,24 @@ contract Controller is
      * @param _value            Value of the withdrawal
      */
     event UserWithdrawal(bytes32 indexed _userId, address indexed _operator, uint256 _value);    
+
+    /**
+     * @notice Triggered when an amount has been transferred from one wallet to another
+     *
+     * @param _fromUserId       Hashed bytes32 of the sender
+     * @param _toUserId         Hashed bytes32 of the receiver
+     * @param _amt              Amount of the transaction
+     */
+    event TransferToEvent(bytes32 indexed _fromUserId, bytes32 indexed _toUserId, uint256 _amt);
+
+    /**
+     * @notice Triggered when an amount has been transferred from one wallet to another
+     *
+     * @param _fromUserId       Hashed bytes32 of the sender
+     * @param _toAddress        Address of the receiver
+     * @param _amt              Amount of the transaction
+     */
+    event TransferToEvent(bytes32 indexed _fromUserId, address indexed _toAddress, uint256 _amt);
 
     /**
      * @notice Triggered when the Wallet Factory is updated
@@ -225,7 +245,11 @@ contract Controller is
         whenNotPaused
         returns (bool)
     {
-        return _transfer(getWalletAddress(_fromUserId), getWalletAddress(_toUserId), _value);
+        bool success = _transfer(getWalletAddress(_fromUserId), getWalletAddress(_toUserId), _value);
+        if(success)
+            emit TransferToEvent(_fromUserId, _toUserId, _value);
+
+        return success;
     }
 
     function transfer(
@@ -242,7 +266,11 @@ contract Controller is
         whenNotPaused
         returns (bool)
     {
-        return _transfer(getWalletAddress(_fromUserId), _toAddress, _value);
+        bool success = _transfer(getWalletAddress(_fromUserId), _toAddress, _value);
+        if(success)
+            emit TransferToEvent(_fromUserId, _toAddress, _value);
+        
+        return success;        
     }
 
     /**
@@ -258,7 +286,9 @@ contract Controller is
         address _toWallet,
         uint256 _value
     ) private returns (bool) {
+
         return IWallet(_fromWallet).transferTo(IWallet(_toWallet), _value);
+        
     }
 
     /**
