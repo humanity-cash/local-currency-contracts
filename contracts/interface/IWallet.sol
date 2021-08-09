@@ -10,7 +10,6 @@ pragma solidity ^0.8.0;
  * @author Sebastian Gerske <https://github.com/h34d>
  */
 interface IWallet {
-
     /**
      * @notice Used to initialize a new Wallet contract
      *

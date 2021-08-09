@@ -20,8 +20,16 @@ contract("Controller.Deposit", async (accounts) => {
 		let user = toBytes32(uuid());
 		await controller.newWallet(user, { from: operator1 });
 
-		const result = await controller.deposit(user, oneToken, { from: operator1 });
-		truffleAssert.eventEmitted(result, 'UserDeposit', (ev) => {return ((ev._userId == user) && (ev._value == oneToken) && (ev._operator == operator1))});
+		const result = await controller.deposit(user, oneToken, {
+			from: operator1,
+		});
+		truffleAssert.eventEmitted(result, "UserDeposit", (ev) => {
+			return (
+				ev._userId == user &&
+				ev._value == oneToken &&
+				ev._operator == operator1
+			);
+		});
 
 		assert.equal(
 			(await controller.balanceOfWallet(user)).toString(),
@@ -35,8 +43,16 @@ contract("Controller.Deposit", async (accounts) => {
 		let user = toBytes32(uuid());
 		await controller.newWallet(user, { from: operator1 });
 
-		const result = await controller.deposit(user, oneToken, { from: operator2 });
-		truffleAssert.eventEmitted(result, 'UserDeposit', (ev) => {return ((ev._userId == user) && (ev._value == oneToken)&& (ev._operator == operator2))});
+		const result = await controller.deposit(user, oneToken, {
+			from: operator2,
+		});
+		truffleAssert.eventEmitted(result, "UserDeposit", (ev) => {
+			return (
+				ev._userId == user &&
+				ev._value == oneToken &&
+				ev._operator == operator2
+			);
+		});
 
 		assert.equal(
 			(await controller.balanceOfWallet(user)).toString(),

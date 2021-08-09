@@ -60,7 +60,7 @@ contract Controller is
      * @param _operator         Address of the bank operator that will fulfill the withdrawal
      * @param _value            Value of the withdrawal
      */
-    event UserWithdrawal(bytes32 indexed _userId, address indexed _operator, uint256 _value);    
+    event UserWithdrawal(bytes32 indexed _userId, address indexed _operator, uint256 _value);
 
     /**
      * @notice Triggered when an amount has been transferred from one wallet to another
@@ -245,9 +245,12 @@ contract Controller is
         whenNotPaused
         returns (bool)
     {
-        bool success = _transfer(getWalletAddress(_fromUserId), getWalletAddress(_toUserId), _value);
-        if(success)
-            emit TransferToEvent(_fromUserId, _toUserId, _value);
+        bool success = _transfer(
+            getWalletAddress(_fromUserId),
+            getWalletAddress(_toUserId),
+            _value
+        );
+        if (success) emit TransferToEvent(_fromUserId, _toUserId, _value);
 
         return success;
     }
@@ -267,10 +270,9 @@ contract Controller is
         returns (bool)
     {
         bool success = _transfer(getWalletAddress(_fromUserId), _toAddress, _value);
-        if(success)
-            emit TransferToEvent(_fromUserId, _toAddress, _value);
-        
-        return success;        
+        if (success) emit TransferToEvent(_fromUserId, _toAddress, _value);
+
+        return success;
     }
 
     /**
@@ -286,9 +288,7 @@ contract Controller is
         address _toWallet,
         uint256 _value
     ) private returns (bool) {
-
         return IWallet(_fromWallet).transferTo(IWallet(_toWallet), _value);
-        
     }
 
     /**

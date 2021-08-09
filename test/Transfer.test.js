@@ -33,7 +33,7 @@ contract("Controller.Transfer", async (accounts) => {
 			from: operator1,
 		});
 
-		// ToDo: Find out why this doesn't work 
+		// ToDo: Find out why this doesn't work
 		// truffleAssert.eventEmitted(result, 'TransferToEvent', (ev) => {return ((ev._fromUserId == walletId) && (ev._toAddress == newWalletAddress) && (ev._amt == oneToken))});
 	});
 
@@ -48,10 +48,9 @@ contract("Controller.Transfer", async (accounts) => {
 				from: operator1,
 			}
 		);
-		
+
 		// ToDo: Find out why this doesn't work
 		// truffleAssert.eventEmitted(result, 'TransferToEvent', (ev) => {return ((ev._fromUserId == walletId) && (ev._toAddress == someone) && (ev._amt == oneToken))});
-
 	});
 
 	it("Should fail to transfer with zero value even if funds are available", async () => {
