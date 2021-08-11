@@ -24,33 +24,39 @@ contract("Controller.Transfer", async (accounts) => {
 
 	it("Should transfer to new wallet", async () => {
 		const { controller } = deployment;
-
 		const newWalletId = toBytes32(uuid());
 		await controller.newWallet(newWalletId, { from: operator2 });
-		//const newWalletAddress = await controller.getWalletAddress(newWalletId);
-
-		await controller.transfer(walletId, newWalletId, oneToken, {
-			from: operator1,
-		});
-
-		// ToDo: Find out why this doesn't work
-		// truffleAssert.eventEmitted(result, 'TransferToEvent', (ev) => {return ((ev._fromUserId == walletId) && (ev._toAddress == newWalletAddress) && (ev._amt == oneToken))});
-	});
-
-	it("Should transfer to someone", async () => {
-		const { controller } = deployment;
-
-		await controller.methods["transfer(bytes32,address,uint256)"](
+		const result = await controller.transfer(
 			walletId,
-			someone,
+			newWalletId,
 			oneToken,
 			{
 				from: operator1,
 			}
 		);
+		truffleAssert.eventEmitted(result, "TransferToEvent", (ev) => {
+			return (
+				ev._fromUserId == walletId &&
+				ev._toUserId == newWalletId &&
+				ev._amt == oneToken
+			);
+		});
+	});
 
-		// ToDo: Find out why this doesn't work
-		// truffleAssert.eventEmitted(result, 'TransferToEvent', (ev) => {return ((ev._fromUserId == walletId) && (ev._toAddress == someone) && (ev._amt == oneToken))});
+	it("Should transfer to someone", async () => {
+		const { controller } = deployment;
+		const result = await controller.methods[
+			"transfer(bytes32,address,uint256)"
+		](walletId, someone, oneToken, {
+			from: operator1,
+		});
+		truffleAssert.eventEmitted(result, "TransferToEvent", (ev) => {
+			return (
+				ev._fromUserId == walletId &&
+				ev._toAddress == someone &&
+				ev._amt == oneToken
+			);
+		});
 	});
 
 	it("Should fail to transfer with zero value even if funds are available", async () => {
