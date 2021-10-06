@@ -27,6 +27,9 @@ const dumpRoles = async (config, accounts, deployment) => {
 		// controller roles
 		"ADMIN_ROLE",
 		"OPERATOR_ROLE",
+
+		//wallet roles
+		"CONTROLLER_ROLE"
 	];
 	const [deployer] = accounts;
 
@@ -84,7 +87,7 @@ const dumpRoles = async (config, accounts, deployment) => {
 };
 
 module.exports = (deployer, network, accounts) => {
-	const [deployerAccount] = accounts;
+	const [deployerAccount, operator1, operator2] = accounts;
 
 	deployer.deploy(Migrations).then(async (migrations) => {
 		console.log(`Migrations address ${migrations.address}`);
@@ -127,11 +130,20 @@ module.exports = (deployer, network, accounts) => {
 		// Make controller own factory
 		await walletFactory.transferOwnership(controller.address);
 
+		// // Test only, mint some tokens to the deployerAccount
+		// if(token){
+		// 	await token.mint(deployerAccount, utils.toWei("1000", "ether"));
+		// }
+
 		// we just have deployed a token, configure it
 		if (token) {
 			await token.grantRole(MINTER_ROLE, controller.address);
 			await token.renounceRole(MINTER_ROLE, deployerAccount);
 		}
+
+		// Grant "operator" role to the operators
+		await controller.grantRole(OPERATOR_ROLE, operator1);
+		await controller.grantRole(OPERATOR_ROLE, operator2);
 
 		// Give ownership of controller to the operational account
 		await controller.transferOwnership(configToUse.initialOwner);
