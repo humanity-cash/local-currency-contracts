@@ -1,12 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "@openzeppelin/contracts-upgradeable/access/AccessControlUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/proxy/utils/Initializable.sol";
 import "./interface/IWallet.sol";
 import "./interface/IVersionedContract.sol";
 
@@ -18,8 +15,12 @@ import "./interface/IVersionedContract.sol";
  * @author Aaron Boyd <https://github.com/aaronmboyd>
  * @author Sebastian Gerske <https://github.com/h34d>
  */
-contract Wallet is IVersionedContract, IWallet, AccessControl, Initializable, ReentrancyGuard {
-    using SafeMath for uint256;
+contract Wallet is
+    IVersionedContract,
+    IWallet,
+    AccessControlUpgradeable,
+    ReentrancyGuardUpgradeable
+{
     using SafeERC20 for IERC20;
 
     IERC20 public erc20Token;
@@ -84,6 +85,9 @@ contract Wallet is IVersionedContract, IWallet, AccessControl, Initializable, Re
         createdBlock = block.number;
         userId = _userId;
 
+        __ReentrancyGuard_init();
+        __AccessControl_init();
+
         _setupRole(DEFAULT_ADMIN_ROLE, _controller);
         _setupRole(CONTROLLER_ROLE, _controller);
     }
@@ -95,7 +99,7 @@ contract Wallet is IVersionedContract, IWallet, AccessControl, Initializable, Re
      **********************************************************************/
 
     /**
-     * @notice Performs a transfer from one wall to another
+     * @notice Performs a transfer from one wallet to another
      *
      * @param _toWallet     IWallet wallet to transfer to
      * @param _value        uint256 transaction amount
