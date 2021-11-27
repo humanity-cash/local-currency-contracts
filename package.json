@@ -1,14 +1,14 @@
 {
-  "name": "berkshares-contracts",
+  "name": "local-currency-contracts",
   "version": "1.0.0",
-  "description": "Smart contract specification for Berkshares",
+  "description": "Smart contract specification for Humanity Cash local currencies",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/humanity-cash/berkshares-contracts.git"
+    "url": "git+https://github.com/humanity-cash/local-currency-contracts.git"
   },
   "bugs": {
-    "url": "https://github.com/humanity-cash/berkshares-contracts/issues"
+    "url": "https://github.com/humanity-cash/local-currency-contracts/issues"
   },
   "author": "Aaron Boyd - Keyko GmbH",
   "contributors": [
