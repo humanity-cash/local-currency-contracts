@@ -4,6 +4,7 @@ const Wallet = artifacts.require("Wallet");
 const { toBytes32 } = require("./toBytes32");
 const { uuid } = require("uuidv4");
 const { deploy } = require("./deploy");
+const truffleAssert = require("truffle-assertions");
 
 contract("Controller", async (accounts) => {
 	const [owner, operator1, , , , someone] = accounts;
@@ -14,10 +15,43 @@ contract("Controller", async (accounts) => {
 		deployment = await deploy(accounts);
 	});
 
-	it("Should read public attributes for important internal addresses", async () => {
+	it("Should read public local currency token address", async () => {
 		const { controller } = deployment;
 		const token = await controller.erc20Token();
 		assert(token);
+	});
+
+	it("Should read public community chest address", async () => {
+		const { controller } = deployment;
+		const communityChestAddress = await controller.communityChestAddress();
+		assert(communityChestAddress);
+	});
+
+	it("Should not be able to set community chest address not as owner", async () => {
+		const { controller } = deployment;
+		await truffleAssert.reverts(
+			controller.setCommunityChest(
+				"0x211969720ae21A22676047908C8AfDF93100d588",
+				{ from: someone }
+			),
+			"Ownable: caller is not the owner."
+		);
+	});
+
+	it("Should be able to set community chest address", async () => {
+		const { controller } = deployment;
+		await controller.setCommunityChest(
+			"0x211969720ae21A22676047908C8AfDF93100d588",
+			{ from: owner }
+		);
+	});
+
+	it("Should be able to set community chest address again", async () => {
+		const { controller } = deployment;
+		const communityChestAddress = await controller.communityChestAddress();
+		await controller.setCommunityChest(communityChestAddress, {
+			from: owner,
+		});
 	});
 
 	it("Should have an owner matching the deployer address", async () => {
@@ -28,7 +62,6 @@ contract("Controller", async (accounts) => {
 
 	it("Should be able to update factory", async () => {
 		const { controller } = deployment;
-
 		const factory = await controller.walletFactory();
 		await controller.setWalletFactory(factory);
 	});

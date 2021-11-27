@@ -37,7 +37,7 @@ contract("User Management", async (accounts) => {
 		await controller.newWallet(user3, { from: operator1 });
 
 		const walletCount = await controller.getWalletCount();
-		assert.equal(walletCount, 3);
+		assert.equal(walletCount, 4);
 	});
 
 	it("Should iterate the users", async () => {
@@ -59,6 +59,6 @@ contract("User Management", async (accounts) => {
 		}
 		// console.log(users);
 		assert(users);
-		assert.equal(users.length, 3);
+		assert.equal(users.length, 4);
 	});
 });

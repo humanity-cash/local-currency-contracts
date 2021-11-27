@@ -30,10 +30,11 @@ contract("Controller.Pause", async (accounts) => {
 		const tmpUser = toBytes32(uuid());
 		await controller.newWallet(tmpUser, { from: operator1 });
 		await controller.deposit(tmpUser, oneToken, { from: operator1 });
-		await controller.methods["transfer(bytes32,address,uint256)"](
+		await controller.methods["transfer(bytes32,address,uint256,uint256)"](
 			tmpUser,
 			user1,
 			oneToken,
+			zeroTokens,
 			{ from: operator1 }
 		);
 		await token.transfer(user2, oneToken, { from: user1 });
@@ -59,10 +60,11 @@ contract("Controller.Pause", async (accounts) => {
 		const tmpUser = toBytes32(uuid());
 		await controller.newWallet(tmpUser, { from: operator1 });
 		await controller.deposit(tmpUser, oneToken, { from: operator1 });
-		await controller.methods["transfer(bytes32,address,uint256)"](
+		await controller.methods["transfer(bytes32,address,uint256,uint256)"](
 			tmpUser,
 			controller.address,
 			oneToken,
+			zeroTokens,
 			{ from: operator1 }
 		);
 
