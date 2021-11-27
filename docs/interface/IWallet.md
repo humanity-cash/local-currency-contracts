@@ -31,18 +31,18 @@ Performs a transfer from one wallet to another
 
 
 
+### `withdraw(uint256 _value) → bool` (external)
+
+Performs a withdrawal to the controller
+
+
+
+
+
 ### `transferController(address _newController)` (external)
 
 Transfer control of the controller
 
-
-
-
-
-
-### `TransferToEvent(bytes32 _fromUserId, bytes32 _toUserId, uint256 _amt)`
-
-Triggered when an amount has been transferred from one wallet to another
 
 
 

@@ -26,7 +26,7 @@ Enforces a _userId should not be mapped to an existing user / contract address
 
 ### `userExist(bytes32 _userId)`
 
-
+Enforces a _userId exists
 
 
 
@@ -46,14 +46,6 @@ Returns the storage, major, minor, and patch version of the contract.
 
 
 
-### `setWalletFactory(address _newFactoryAddress)` (external)
-
-Public update to a new Wallet Factory
-
-
-
-
-
 ### `balanceOfWallet(bytes32 _userId) → uint256` (public)
 
 Retrieves the available balance of a wallet
@@ -62,9 +54,56 @@ Retrieves the available balance of a wallet
 
 
 
-### `transferTo(bytes32 _fromUserId, bytes32 _toUserId, uint256 _value) → bool` (external)
+### `balanceOfWallet(address _walletAddress) → uint256` (public)
+
+Retrieves the available balance of a wallet
+
+
+
+
+
+### `getWalletAddress(bytes32 _userId) → address` (public)
+
+retrieve contract address for a Wallet
+
+
+
+
+
+### `getWalletAddressAtIndex(uint256 _index) → address` (external)
+
+Get wallet address at index
+
+
+Used for iterating the complete list of wallets
+
+
+### `getWalletCount() → uint256` (external)
+
+Get count of wallets
+
+
+
+
+### `transfer(bytes32 _fromUserId, bytes32 _toUserId, uint256 _value, uint256 _roundUpValue) → bool` (external)
 
 Transfers a local currency token between two existing wallets
+
+
+
+
+
+### `transfer(bytes32 _fromUserId, address _toAddress, uint256 _value, uint256 _roundUpValue) → bool` (external)
+
+Transfers a local currency token between two existing wallets
+
+
+
+
+
+### `_roundUp(bytes32 _fromUserId, uint256 _roundUpValue) → bool` (internal)
+
+Transfers a local currency token to the Community Chest
 
 
 
@@ -78,6 +117,14 @@ Deposits tokens in the wallet identified by the given user id
 
 
 
+### `withdraw(bytes32 _userId, uint256 _value) → bool` (external)
+
+Withdraws tokens from the wallet identified by the given user id
+
+
+
+
+
 ### `newWallet(bytes32 _userId)` (external)
 
 create a new user and assign them a wallet contract
@@ -86,9 +133,17 @@ create a new user and assign them a wallet contract
 
 
 
-### `getWalletAddress(bytes32 _userId) → address` (public)
+### `_newWallet(bytes32 _userId)` (internal)
 
-retrieve contract address for a Wallet
+create a new user and assign them a wallet contract
+
+
+
+
+
+### `setWalletFactory(address _newFactoryAddress)` (external)
+
+Public update to a new Wallet Factory
 
 
 
@@ -147,17 +202,10 @@ Emergency withdrawal of all remaining token to the owner account
 The contract must be paused
 Sends erc20 to current owner
 
-### `getWalletAddressAtIndex(uint256 _index) → address` (external)
+### `setCommunityChest(address _communityChest)` (external)
 
-Get wallet address at index
+Update community chest address
 
-
-Used for iterating the complete list of wallets
-
-
-### `getWalletCount() → uint256` (external)
-
-Get count of wallets
 
 
 
@@ -166,6 +214,38 @@ Get count of wallets
 ### `NewUser(bytes32 _userId, address _walletAddress)`
 
 Triggered when a new user has been created
+
+
+
+
+
+### `UserDeposit(bytes32 _userId, address _operator, uint256 _value)`
+
+Triggered when a user has deposited
+
+
+
+
+
+### `UserWithdrawal(bytes32 _userId, address _operator, uint256 _value)`
+
+Triggered when a user has withdrawn
+
+
+
+
+
+### `TransferToEvent(bytes32 _fromUserId, bytes32 _toUserId, uint256 _amt)`
+
+Triggered when an amount has been transferred from one wallet to another
+
+
+
+
+
+### `TransferToEvent(bytes32 _fromUserId, address _toAddress, uint256 _amt)`
+
+Triggered when an amount has been transferred from one wallet to another
 
 
 
