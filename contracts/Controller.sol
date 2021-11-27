@@ -2,7 +2,6 @@
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
@@ -28,13 +27,14 @@ contract Controller is
     Pausable,
     ReentrancyGuard
 {
-    using SafeMath for uint256;
     using SafeERC20 for ERC20PresetMinterPauser;
     using EnumerableMap for EnumerableMap.UintToAddressMap;
     using Address for address;
 
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
+    bytes32 public constant COMMUNITY_CHEST = keccak256("COMMUNITY_CHEST");
+    address public communityChestAddress;
 
     /**
      * @notice Triggered when a new user has been created
@@ -106,6 +106,9 @@ contract Controller is
 
         erc20Token = ERC20PresetMinterPauser(_erc20Token);
         walletFactory = IWalletFactory(_walletFactory);
+
+        _newWallet(COMMUNITY_CHEST);
+        communityChestAddress = getWalletAddress(COMMUNITY_CHEST);
     }
 
     /**********************************************************************
@@ -129,7 +132,7 @@ contract Controller is
             uint256
         )
     {
-        return (1, 2, 0, 0);
+        return (1, 2, 0, 1);
     }
 
     /**
@@ -229,16 +232,18 @@ contract Controller is
      * @param _fromUserId   User identifier
      * @param _toUserId     Receiver identifier
      * @param _value        Amount to transfer
+     * @param _roundUpValue Round up value to transfer (can be zero)
      */
     function transfer(
         bytes32 _fromUserId,
         bytes32 _toUserId,
-        uint256 _value
+        uint256 _value,
+        uint256 _roundUpValue
     )
         external
         greaterThanZero(_value)
         userExist(_fromUserId)
-        balanceAvailable(_fromUserId, _value)
+        balanceAvailable(_fromUserId, (_value + _roundUpValue))
         userExist(_toUserId)
         onlyRole(OPERATOR_ROLE)
         nonReentrant
@@ -252,18 +257,30 @@ contract Controller is
         );
         if (success) emit TransferToEvent(_fromUserId, _toUserId, _value);
 
+        if (_roundUpValue > 0) {
+            success = success && _roundUp(_fromUserId, _roundUpValue);
+        }
         return success;
     }
 
+    /**
+     * @notice Transfers a local currency token between two existing wallets
+     *
+     * @param _fromUserId   User identifier
+     * @param _toAddress    Receiver identifier
+     * @param _value        Amount to transfer
+     * @param _roundUpValue Round up value to transfer (can be zero)
+     */
     function transfer(
         bytes32 _fromUserId,
         address _toAddress,
-        uint256 _value
+        uint256 _value,
+        uint256 _roundUpValue
     )
         external
         greaterThanZero(_value)
         userExist(_fromUserId)
-        balanceAvailable(_fromUserId, _value)
+        balanceAvailable(_fromUserId, (_value + _roundUpValue))
         onlyRole(OPERATOR_ROLE)
         nonReentrant
         whenNotPaused
@@ -272,6 +289,9 @@ contract Controller is
         bool success = _transfer(getWalletAddress(_fromUserId), _toAddress, _value);
         if (success) emit TransferToEvent(_fromUserId, _toAddress, _value);
 
+        if (_roundUpValue > 0) {
+            success = success && _roundUp(_fromUserId, _roundUpValue);
+        }
         return success;
     }
 
@@ -289,6 +309,22 @@ contract Controller is
         uint256 _value
     ) private returns (bool) {
         return IWallet(_fromWallet).transferTo(IWallet(_toWallet), _value);
+    }
+
+    /**
+     * @notice Transfers a local currency token to the Community Chest
+     *
+     * @param _fromUserId   User identifier
+     * @param _roundUpValue Round up value to transfer (can be zero)
+     */
+    function _roundUp(bytes32 _fromUserId, uint256 _roundUpValue) internal returns (bool) {
+        bool success = _transfer(
+            getWalletAddress(_fromUserId),
+            communityChestAddress,
+            _roundUpValue
+        );
+        if (success) emit TransferToEvent(_fromUserId, COMMUNITY_CHEST, _roundUpValue);
+        return success;
     }
 
     /**
@@ -366,6 +402,15 @@ contract Controller is
         whenNotPaused
         userNotExist(_userId)
     {
+        _newWallet(_userId);
+    }
+
+    /**
+     * @notice create a new user and assign them a wallet contract
+     *
+     * @param _userId user identifier
+     */
+    function _newWallet(bytes32 _userId) internal {
         address newWalletAddress = walletFactory.createProxiedWallet(_userId);
         require(newWalletAddress != address(0x0), "ERR_WALLET_FAILED");
 
@@ -434,7 +479,7 @@ contract Controller is
      */
     function updateWalletImplementation(address _newLogic) external onlyOwner {
         uint256 i;
-        for (i = 0; i < wallets.length(); i = i.add(1)) {
+        for (i = 0; i < wallets.length(); i++) {
             address walletAddress;
             // .at function returns a tuple of (uint256, address)
             (, walletAddress) = wallets.at(i);
@@ -469,5 +514,14 @@ contract Controller is
     function withdrawToOwner() external onlyOwner whenPaused nonReentrant {
         uint256 balanceOf = erc20Token.balanceOf(address(this));
         erc20Token.transfer(owner(), balanceOf);
+    }
+
+    /**
+     * @notice Update community chest address
+     *
+     * @param _communityChest new address
+     */
+    function setCommunityChest(address _communityChest) external onlyOwner {
+        communityChestAddress = _communityChest;
     }
 }
