@@ -11,6 +11,7 @@ import "@openzeppelin/contracts/utils/Address.sol";
 import "./interface/IWallet.sol";
 import "./interface/IWalletFactory.sol";
 import "./interface/IVersionedContract.sol";
+import "./lib/ABDKMath64x64.sol";
 
 /**
  * @title Controller contract
@@ -34,7 +35,11 @@ contract Controller is
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     bytes32 public constant OPERATOR_ROLE = keccak256("OPERATOR_ROLE");
     bytes32 public constant COMMUNITY_CHEST = keccak256("COMMUNITY_CHEST");
+    bytes32 public constant HUMANITY_CASH = keccak256("HUMANITY_CASH");
     address public communityChestAddress;
+    address public humanityCashAddress;
+    int256 redemptionFeeNumerator;
+    int256 redemptionFeeDenominator;
 
     /**
      * @notice Triggered when a new user has been created
@@ -88,6 +93,51 @@ contract Controller is
      */
     event FactoryUpdated(address indexed _oldFactoryAddress, address indexed _newFactoryAddress);
 
+    /**
+     * @notice Triggered when the Community Chest address is updated
+     *
+     * @param _oldCommunityChestAddress   Old address
+     * @param _newCommunityChestAddress   New address
+     */
+    event CommunityChestUpdated(
+        address indexed _oldCommunityChestAddress,
+        address indexed _newCommunityChestAddress
+    );
+
+    /**
+     * @notice Triggered when the Humanity Cash address is updated
+     *
+     * @param _oldHumanityCashAddress   Old address
+     * @param _newHumanityCashAddress   New address
+     */
+    event HumanityCashUpdated(
+        address indexed _oldHumanityCashAddress,
+        address indexed _newHumanityCashAddress
+    );
+
+    /**
+     * @notice Triggered when the Redemption Fee is updated
+     *
+     * @param _oldNumerator   Old numerator
+     * @param _oldDenominator Old denominator
+     * @param _newNumerator   New numerator
+     * @param _newDenominator New denominator
+     */
+    event RedemptionFeeUpdated(
+        int256 _oldNumerator,
+        int256 _oldDenominator,
+        int256 _newNumerator,
+        int256 _newDenominator
+    );
+
+    /**
+     * @notice Triggered when a redemption (withdrawal) fee is collected
+     *
+     * @param _redemptionFeeAddress   Recipient of the fee (the humanityCashAddress)
+     * @param _redemptionFee          New factory address
+     */
+    event RedemptionFee(address indexed _redemptionFeeAddress, uint256 _redemptionFee);
+
     ERC20PresetMinterPauser public erc20Token;
     IWalletFactory public walletFactory;
 
@@ -109,6 +159,12 @@ contract Controller is
 
         _newWallet(COMMUNITY_CHEST);
         communityChestAddress = getWalletAddress(COMMUNITY_CHEST);
+
+        _newWallet(HUMANITY_CASH);
+        humanityCashAddress = getWalletAddress(HUMANITY_CASH);
+
+        redemptionFeeNumerator = 15;
+        redemptionFeeDenominator = 1000;
     }
 
     /**********************************************************************
@@ -384,9 +440,34 @@ contract Controller is
      */
     function _withdraw(bytes32 _userId, uint256 _value) private returns (bool) {
         address walletAddress = getWalletAddress(_userId);
+
+        // Withdraw full amount to Controller
         IWallet(walletAddress).withdraw(_value);
-        erc20Token.burn(_value);
-        emit UserWithdrawal(_userId, msg.sender, _value);
+
+        // Calculate redemption fee
+        int128 redemptionFeeRatio = ABDKMath64x64.divi(
+            redemptionFeeNumerator,
+            redemptionFeeDenominator
+        );
+        uint256 redemptionFeeAmount = ABDKMath64x64.mulu(redemptionFeeRatio, _value);
+
+        // Send redemption fee to humanityCashAddress
+        // If it's more than 0.01 in the (dollar pegged) local currency token
+
+        uint256 burnAmount = _value;
+        uint256 withdrawalAmount = _value;
+
+        if (redemptionFeeAmount >= (0.01 ether)) {
+            erc20Token.transfer(humanityCashAddress, redemptionFeeAmount);
+            burnAmount = burnAmount - redemptionFeeAmount;
+            withdrawalAmount = withdrawalAmount - redemptionFeeAmount;
+            emit RedemptionFee(humanityCashAddress, redemptionFeeAmount);
+        }
+
+        // Burn
+        erc20Token.burn(burnAmount);
+
+        emit UserWithdrawal(_userId, msg.sender, withdrawalAmount);
         return true;
     }
 
@@ -440,8 +521,9 @@ contract Controller is
      * @param _newFactoryAddress   new factory address
      */
     function _setWalletFactory(address _newFactoryAddress) private {
+        address oldAddress = address(walletFactory);
         walletFactory = IWalletFactory(_newFactoryAddress);
-        emit FactoryUpdated(address(walletFactory), _newFactoryAddress);
+        emit FactoryUpdated(oldAddress, _newFactoryAddress);
     }
 
     /**
@@ -522,6 +604,38 @@ contract Controller is
      * @param _communityChest new address
      */
     function setCommunityChest(address _communityChest) external onlyOwner {
+        address oldAddress = communityChestAddress;
         communityChestAddress = _communityChest;
+        emit CommunityChestUpdated(oldAddress, _communityChest);
+    }
+
+    /**
+     * @notice Update Humanity Cash Address
+     *
+     * @param _humanityCashAddress new address
+     */
+    function setHumanityCashAddress(address _humanityCashAddress) external onlyOwner {
+        address oldAddress = humanityCashAddress;
+        humanityCashAddress = _humanityCashAddress;
+        emit HumanityCashUpdated(oldAddress, _humanityCashAddress);
+    }
+
+    /**
+     * @notice Set redemption fee
+     *
+     * @param _numerator   Redemption fee numerator
+     * @param _denominator Redemption fee denominator
+     */
+    function setRedemptionFee(int256 _numerator, int256 _denominator) external onlyOwner {
+        int256 oldNumerator = redemptionFeeNumerator;
+        int256 oldDenominator = redemptionFeeDenominator;
+        redemptionFeeNumerator = _numerator;
+        redemptionFeeDenominator = _denominator;
+        emit RedemptionFeeUpdated(
+            oldNumerator,
+            oldDenominator,
+            redemptionFeeNumerator,
+            redemptionFeeDenominator
+        );
     }
 }

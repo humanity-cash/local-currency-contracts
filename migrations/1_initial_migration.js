@@ -3,6 +3,7 @@ const Controller = artifacts.require("Controller");
 const Wallet = artifacts.require("Wallet");
 const WalletFactory = artifacts.require("WalletFactory");
 const Token = artifacts.require("Token");
+const ABDKMath64x64 = artifacts.require("ABDKMath64x64");
 const config = require("./config.json");
 const utils = require("web3-utils");
 
@@ -89,8 +90,15 @@ const dumpRoles = async (config, accounts, deployment) => {
 module.exports = (deployer, network, accounts) => {
 	const [deployerAccount, operator1, operator2] = accounts;
 
-	deployer.deploy(Migrations).then(async (migrations) => {
-		console.log(`Migrations address ${migrations.address}`);
+	deployer.deploy(Migrations).then((instance) => {
+		console.log(`Migrations address ${instance.address}`);
+	});	
+
+	// Deploy library and link
+	deployer.deploy(ABDKMath64x64).then(async () => {
+
+		// Link implementation contracts for Controller library
+		await deployer.link(ABDKMath64x64, Controller);
 
 		// Use configuration items
 		let configToUse = config[network];
