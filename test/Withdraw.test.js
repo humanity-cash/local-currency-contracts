@@ -35,8 +35,7 @@ contract("Controller.Withdraw", async (accounts) => {
 		truffleAssert.eventEmitted(result, "UserWithdrawal", (ev) => {
 			return (
 				ev._userId == user &&
-				ev._value >= utils.toWei("98.49") &&
-				ev._value <= utils.toWei("98.51") &&
+				ev._value == utils.toWei("100.00") &&
 				ev._operator == operator1
 			);
 		});
@@ -84,8 +83,7 @@ contract("Controller.Withdraw", async (accounts) => {
 		truffleAssert.eventEmitted(result, "UserWithdrawal", (ev) => {
 			return (
 				ev._userId == user &&
-				ev._value >= utils.toWei("98.49") &&
-				ev._value <= utils.toWei("98.51") &&
+				ev._value == utils.toWei("100.00") &&
 				ev._operator == operator2
 			);
 		});

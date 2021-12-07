@@ -460,11 +460,10 @@ contract Controller is
         if (redemptionFeeAmount >= (0.01 ether)) {
             erc20Token.transfer(humanityCashAddress, redemptionFeeAmount);
             burnAmount = burnAmount - redemptionFeeAmount;
-            withdrawalAmount = withdrawalAmount - redemptionFeeAmount;
             emit RedemptionFee(humanityCashAddress, redemptionFeeAmount);
         }
 
-        // Burn
+        // Burn 
         erc20Token.burn(burnAmount);
 
         emit UserWithdrawal(_userId, msg.sender, withdrawalAmount);
