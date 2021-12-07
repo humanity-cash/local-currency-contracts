@@ -463,7 +463,7 @@ contract Controller is
             emit RedemptionFee(humanityCashAddress, redemptionFeeAmount);
         }
 
-        // Burn 
+        // Burn
         erc20Token.burn(burnAmount);
 
         emit UserWithdrawal(_userId, msg.sender, withdrawalAmount);
