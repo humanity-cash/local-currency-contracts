@@ -379,7 +379,7 @@ contract Controller is
             communityChestAddress,
             _roundUpValue
         );
-        if (success) emit TransferToEvent(_fromUserId, COMMUNITY_CHEST, _roundUpValue);
+        if (success) emit TransferToEvent(_fromUserId, communityChestAddress, _roundUpValue);
         return success;
     }
 
