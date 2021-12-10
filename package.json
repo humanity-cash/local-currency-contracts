@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Smart contract specification for Humanity Cash local currencies",
   "license": "MIT",
+  "engines": {
+    "node": ">=12 <13"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/humanity-cash/local-currency-contracts.git"
