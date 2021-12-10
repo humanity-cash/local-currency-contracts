@@ -34,8 +34,8 @@ async function main(){
     const res2 = await ipfs.add(artifact.source);
       log(`source:   ${res2.path}`);
 
-    log(`Waiting 5 seconds before sending next file...`);
-    await sleep(5000);
+    log(`Waiting 10 seconds before sending next file...`);
+    await sleep(10000);
     
   }
 
