@@ -138,10 +138,11 @@ module.exports = (deployer, network, accounts) => {
 		// Make controller own factory
 		await walletFactory.transferOwnership(controller.address);
 
-		// // Test only, mint some tokens to the deployerAccount
-		// if(token){
-		// 	await token.mint(deployerAccount, utils.toWei("1000", "ether"));
-		// }
+		// Mint the launch pool to the HUMANITY_CASH account
+		if(token){
+			const humanityCashAddress = await controller.humanityCashAddress();
+			await token.mint(humanityCashAddress, utils.toWei("60000", "ether"));
+		}
 
 		// we just have deployed a token, configure it
 		if (token) {
