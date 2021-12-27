@@ -42,6 +42,7 @@ contract Controller is
     address public humanityCashAddress;
     int256 redemptionFeeNumerator;
     int256 redemptionFeeDenominator;
+    uint256 redemptionFeeMinimum;
     ERC20PresetMinterPauser public erc20Token;
     IWalletFactory public walletFactory;
 
@@ -69,6 +70,7 @@ contract Controller is
 
         redemptionFeeNumerator = 15;
         redemptionFeeDenominator = 1000;
+        redemptionFeeMinimum = 0.50 ether;
     }
 
     /**********************************************************************
@@ -373,6 +375,7 @@ contract Controller is
         whenNotPaused
         returns (bool)
     {
+        require(_value > redemptionFeeMinimum, "ERR_WITHDRAW_AMOUNT");
         return _withdraw(_userId, _value);
     }
 
@@ -394,18 +397,17 @@ contract Controller is
             redemptionFeeDenominator
         );
         uint256 redemptionFeeAmount = ABDKMath64x64.mulu(redemptionFeeRatio, _value);
-
-        // Send redemption fee to humanityCashAddress
-        // If it's more than 0.01 in the (dollar pegged) local currency token
-
         uint256 burnAmount = _value;
         uint256 withdrawalAmount = _value;
 
-        if (redemptionFeeAmount >= (0.01 ether)) {
-            erc20Token.transfer(humanityCashAddress, redemptionFeeAmount);
-            burnAmount = burnAmount - redemptionFeeAmount;
-            emit RedemptionFee(humanityCashAddress, redemptionFeeAmount);
-        }
+        // Redemption fee must meet minimum
+        if(redemptionFeeAmount < redemptionFeeMinimum)
+            redemptionFeeAmount = redemptionFeeMinimum;
+
+        // Transfer redemption fee to humanityCashAddress
+        erc20Token.transfer(humanityCashAddress, redemptionFeeAmount);
+        burnAmount = burnAmount - redemptionFeeAmount;
+        emit RedemptionFee(humanityCashAddress, redemptionFeeAmount);        
 
         // Burn
         erc20Token.burn(burnAmount);
@@ -587,6 +589,20 @@ contract Controller is
             oldDenominator,
             redemptionFeeNumerator,
             redemptionFeeDenominator
+        );
+    }
+
+    /**
+     * @notice Set redemption fee minimum
+     *
+     * @param _redemptionFeeMinimum   Redemption fee minimum
+     */
+    function setRedemptionFeeMinimum(uint256 _redemptionFeeMinimum) external override onlyOwner {       
+        uint256 oldValue = redemptionFeeMinimum;
+        redemptionFeeMinimum = _redemptionFeeMinimum;
+        emit RedemptionFeeMinimumUpdated(
+            oldValue,
+            redemptionFeeMinimum
         );
     }
 }

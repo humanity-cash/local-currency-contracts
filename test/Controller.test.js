@@ -5,6 +5,7 @@ const { toBytes32 } = require("./toBytes32");
 const { uuid } = require("uuidv4");
 const { deploy } = require("./deploy");
 const truffleAssert = require("truffle-assertions");
+const utils = require("web3-utils");
 
 contract("Controller", async (accounts) => {
 	const [owner, operator1, , , , someone] = accounts;
@@ -52,6 +53,13 @@ contract("Controller", async (accounts) => {
 		await controller.setCommunityChest(communityChestAddress, {
 			from: owner,
 		});
+	});
+
+	it("Should be able to set redemption fee minimum", async () => {
+		const { controller } = deployment;
+		await controller.setRedemptionFeeMinimum(utils.toWei("0.50", "ether")), {
+			from: owner,
+		};
 	});
 
 	it("Should have an owner matching the deployer address", async () => {

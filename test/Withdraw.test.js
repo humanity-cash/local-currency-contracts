@@ -113,7 +113,7 @@ contract("Controller.Withdraw", async (accounts) => {
 		);
 	});
 
-	it("Should be able to withdraw $0.50 from bank2 (with no redemption fee)", async () => {
+	it("Should be able to withdraw $0.51 from bank2 (with 0.50 redemption fee)", async () => {
 		const { controller } = deployment;
 
 		let user = toBytes32(uuid());
@@ -123,7 +123,7 @@ contract("Controller.Withdraw", async (accounts) => {
 
 		// Deposit before withdrawing
 		await controller.deposit(user, oneHundredTokens, { from: operator1 });
-		const result = await controller.withdraw(user, utils.toWei("0.50"), {
+		const result = await controller.withdraw(user, utils.toWei("0.51"), {
 			from: operator2,
 		});
 
@@ -131,24 +131,40 @@ contract("Controller.Withdraw", async (accounts) => {
 		truffleAssert.eventEmitted(result, "UserWithdrawal", (ev) => {
 			return (
 				ev._userId == user &&
-				ev._value == utils.toWei("0.50") &&
+				ev._value == utils.toWei("0.51") &&
 				ev._operator == operator2
 			);
 		});
 
 		assert.equal(
 			(await controller.balanceOfWallet(user)).toString(),
-			utils.toWei("99.50")
+			utils.toWei("99.49")
 		);
 
 		// Redemption fees collected in Humanity cash address are now doubled (same as from previous test)
 		assert(
 			(await controller.balanceOfWallet(humanityCashUser)).toString() >=
-				utils.toWei("2.98")
+				utils.toWei("3.48")
 		);
 		assert(
 			(await controller.balanceOfWallet(humanityCashUser)).toString() <=
-				utils.toWei("3.02")
+				utils.toWei("3.52")
+		);
+	});
+
+	it("Should fail to withdraw 0.49 from bank2", async () => {
+		const { controller } = deployment;
+		let user = toBytes32(uuid());
+		await controller.newWallet(user, { from: operator1 });
+
+		// Deposit before withdrawing
+		await controller.deposit(user, oneHundredTokens, { from: operator1 });
+
+		await truffleAssert.reverts(
+			controller.withdraw(user, utils.toWei("0.49"), {
+				from: operator1,
+			}),
+			`ERR_WITHDRAW_AMOUNT`
 		);
 	});
 

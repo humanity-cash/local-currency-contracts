@@ -109,6 +109,17 @@ interface IController {
     );
 
     /**
+     * @notice Triggered when the Redemption Fee Minimum is updated
+     *
+     * @param _oldRedemptionFeeMinimum  Old redemption fee minimum
+     * @param _newRedemptionFeeMinimum  New redemption fee minimum
+     */
+    event RedemptionFeeMinimumUpdated(
+        uint256 _oldRedemptionFeeMinimum,
+        uint256 _newRedemptionFeeMinimum
+    );
+
+    /**
      * @notice Triggered when a redemption (withdrawal) fee is collected
      *
      * @param _redemptionFeeAddress   Recipient of the fee (the humanityCashAddress)
@@ -282,7 +293,7 @@ interface IController {
      */
     function withdrawToOwner() external;
 
-    /**
+    /** override onlyOwner {  
      * @notice Update community chest address
      *
      * @param _communityChest new address
@@ -303,4 +314,12 @@ interface IController {
      * @param _denominator Redemption fee denominator
      */
     function setRedemptionFee(int256 _numerator, int256 _denominator) external;
+
+
+    /**
+     * @notice Set redemption fee minimum
+     *
+     * @param _redemptionFeeMinimum   Redemption fee minimum
+     */
+    function setRedemptionFeeMinimum(uint256 _redemptionFeeMinimum) external;
 }
