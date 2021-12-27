@@ -175,7 +175,13 @@ contract Controller is
      * @param _userId user identifier
      * @return address of user's contract
      */
-    function getWalletAddress(bytes32 _userId) external view override userExist(_userId) returns (address) {
+    function getWalletAddress(bytes32 _userId)
+        external
+        view
+        override
+        userExist(_userId)
+        returns (address)
+    {
         return _getWalletAddress(_userId);
     }
 
@@ -230,7 +236,8 @@ contract Controller is
         uint256 _value,
         uint256 _roundUpValue
     )
-        external override
+        external
+        override
         greaterThanZero(_value)
         userExist(_fromUserId)
         balanceAvailable(_fromUserId, (_value + _roundUpValue))
@@ -267,7 +274,8 @@ contract Controller is
         uint256 _value,
         uint256 _roundUpValue
     )
-        external override
+        external
+        override
         greaterThanZero(_value)
         userExist(_fromUserId)
         balanceAvailable(_fromUserId, (_value + _roundUpValue))
@@ -324,7 +332,8 @@ contract Controller is
      * @param _value    Amount to deposit
      */
     function deposit(bytes32 _userId, uint256 _value)
-        external override
+        external
+        override
         greaterThanZero(_value)
         userExist(_userId)
         onlyRole(OPERATOR_ROLE)
@@ -354,7 +363,15 @@ contract Controller is
      * @param _userId   User identifier
      * @param _value    Amount to withdraw
      */
-    function withdraw(bytes32 _userId, uint256 _value) external override greaterThanZero(_value) userExist(_userId) onlyRole(OPERATOR_ROLE) nonReentrant whenNotPaused returns (bool)
+    function withdraw(bytes32 _userId, uint256 _value)
+        external
+        override
+        greaterThanZero(_value)
+        userExist(_userId)
+        onlyRole(OPERATOR_ROLE)
+        nonReentrant
+        whenNotPaused
+        returns (bool)
     {
         return _withdraw(_userId, _value);
     }
@@ -403,7 +420,8 @@ contract Controller is
      * @param _userId user identifier
      */
     function newWallet(bytes32 _userId)
-        external override
+        external
+        override
         onlyRole(OPERATOR_ROLE)
         nonReentrant
         whenNotPaused
@@ -473,7 +491,12 @@ contract Controller is
      * @param userId current owner of the wallet
      *
      */
-    function transferWalletOwnership(address newOwner, bytes32 userId) external override userExist(userId) onlyOwner {
+    function transferWalletOwnership(address newOwner, bytes32 userId)
+        external
+        override
+        userExist(userId)
+        onlyOwner
+    {
         address walletAddress = _getWalletAddress(userId);
         IWallet user = IWallet(walletAddress);
         user.transferController(newOwner);
@@ -483,7 +506,7 @@ contract Controller is
      * @notice Update implementation address for wallets
      *
      * @param _newLogic New implementation logic for wallet proxies
-     * @dev If the number of wallets is sufficiently large this 
+     * @dev If the number of wallets is sufficiently large this
      *      function may run out of gas
      *
      */

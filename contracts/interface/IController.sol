@@ -10,7 +10,6 @@ pragma solidity ^0.8.4;
  * @author Sebastian Gerske <https://github.com/h34d>
  */
 interface IController {
-
     /**
      * @notice Triggered when a new user has been created
      *
@@ -194,7 +193,7 @@ interface IController {
         address _toAddress,
         uint256 _value,
         uint256 _roundUpValue
-    )  external returns (bool);
+    ) external returns (bool);
 
     /**
      * @notice Deposits tokens in the wallet identified by the given user id
