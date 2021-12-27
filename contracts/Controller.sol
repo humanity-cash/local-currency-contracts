@@ -11,6 +11,7 @@ import "@openzeppelin/contracts/utils/Address.sol";
 import "./interface/IWallet.sol";
 import "./interface/IWalletFactory.sol";
 import "./interface/IVersionedContract.sol";
+import "./interface/IController.sol";
 import "./lib/ABDKMath64x64.sol";
 
 /**
@@ -26,7 +27,8 @@ contract Controller is
     AccessControlEnumerable,
     Ownable,
     Pausable,
-    ReentrancyGuard
+    ReentrancyGuard,
+    IController
 {
     using SafeERC20 for ERC20PresetMinterPauser;
     using EnumerableMap for EnumerableMap.UintToAddressMap;
@@ -40,104 +42,6 @@ contract Controller is
     address public humanityCashAddress;
     int256 redemptionFeeNumerator;
     int256 redemptionFeeDenominator;
-
-    /**
-     * @notice Triggered when a new user has been created
-     *
-     * @param _userId           Hashed bytes32 of the userId
-     * @param _walletAddress    Address of the wallet
-     */
-    event NewUser(bytes32 indexed _userId, address indexed _walletAddress);
-
-    /**
-     * @notice Triggered when a user has deposited
-     *
-     * @param _userId           Hashed bytes32 of the userId
-     * @param _operator         Address of the bank operator that fulfilled the deposit
-     * @param _value            Value of the deposit
-     */
-    event UserDeposit(bytes32 indexed _userId, address indexed _operator, uint256 _value);
-
-    /**
-     * @notice Triggered when a user has withdrawn
-     *
-     * @param _userId           Hashed bytes32 of the userId
-     * @param _operator         Address of the bank operator that will fulfill the withdrawal
-     * @param _value            Value of the withdrawal
-     */
-    event UserWithdrawal(bytes32 indexed _userId, address indexed _operator, uint256 _value);
-
-    /**
-     * @notice Triggered when an amount has been transferred from one wallet to another
-     *
-     * @param _fromUserId       Hashed bytes32 of the sender
-     * @param _toUserId         Hashed bytes32 of the receiver
-     * @param _amt              Amount of the transaction
-     */
-    event TransferToEvent(bytes32 indexed _fromUserId, bytes32 indexed _toUserId, uint256 _amt);
-
-    /**
-     * @notice Triggered when an amount has been transferred from one wallet to another
-     *
-     * @param _fromUserId       Hashed bytes32 of the sender
-     * @param _toAddress        Address of the receiver
-     * @param _amt              Amount of the transaction
-     */
-    event TransferToEvent(bytes32 indexed _fromUserId, address indexed _toAddress, uint256 _amt);
-
-    /**
-     * @notice Triggered when the Wallet Factory is updated
-     *
-     * @param _oldFactoryAddress   Old factory address
-     * @param _newFactoryAddress   New factory address
-     */
-    event FactoryUpdated(address indexed _oldFactoryAddress, address indexed _newFactoryAddress);
-
-    /**
-     * @notice Triggered when the Community Chest address is updated
-     *
-     * @param _oldCommunityChestAddress   Old address
-     * @param _newCommunityChestAddress   New address
-     */
-    event CommunityChestUpdated(
-        address indexed _oldCommunityChestAddress,
-        address indexed _newCommunityChestAddress
-    );
-
-    /**
-     * @notice Triggered when the Humanity Cash address is updated
-     *
-     * @param _oldHumanityCashAddress   Old address
-     * @param _newHumanityCashAddress   New address
-     */
-    event HumanityCashUpdated(
-        address indexed _oldHumanityCashAddress,
-        address indexed _newHumanityCashAddress
-    );
-
-    /**
-     * @notice Triggered when the Redemption Fee is updated
-     *
-     * @param _oldNumerator   Old numerator
-     * @param _oldDenominator Old denominator
-     * @param _newNumerator   New numerator
-     * @param _newDenominator New denominator
-     */
-    event RedemptionFeeUpdated(
-        int256 _oldNumerator,
-        int256 _oldDenominator,
-        int256 _newNumerator,
-        int256 _newDenominator
-    );
-
-    /**
-     * @notice Triggered when a redemption (withdrawal) fee is collected
-     *
-     * @param _redemptionFeeAddress   Recipient of the fee (the humanityCashAddress)
-     * @param _redemptionFee          New factory address
-     */
-    event RedemptionFee(address indexed _redemptionFeeAddress, uint256 _redemptionFee);
-
     ERC20PresetMinterPauser public erc20Token;
     IWalletFactory public walletFactory;
 
@@ -158,10 +62,10 @@ contract Controller is
         walletFactory = IWalletFactory(_walletFactory);
 
         _newWallet(COMMUNITY_CHEST);
-        communityChestAddress = getWalletAddress(COMMUNITY_CHEST);
+        communityChestAddress = _getWalletAddress(COMMUNITY_CHEST);
 
         _newWallet(HUMANITY_CASH);
-        humanityCashAddress = getWalletAddress(HUMANITY_CASH);
+        humanityCashAddress = _getWalletAddress(HUMANITY_CASH);
 
         redemptionFeeNumerator = 15;
         redemptionFeeDenominator = 1000;
@@ -188,7 +92,7 @@ contract Controller is
             uint256
         )
     {
-        return (1, 2, 0, 1);
+        return (1, 2, 0, 2);
     }
 
     /**
@@ -203,7 +107,7 @@ contract Controller is
      * @notice Enforces value to not be greater than a user's available balance
      */
     modifier balanceAvailable(bytes32 _userId, uint256 _value) {
-        require(balanceOfWallet(_userId) >= _value, "ERR_NO_BALANCE");
+        require(_balanceOfWallet(_userId) >= _value, "ERR_NO_BALANCE");
         _;
     }
 
@@ -229,9 +133,19 @@ contract Controller is
      * @param _userId user identifier
      * @return uint256 available balance
      */
-    function balanceOfWallet(bytes32 _userId) public view returns (uint256) {
+    function balanceOfWallet(bytes32 _userId) external view override returns (uint256) {
+        return _balanceOfWallet(_userId);
+    }
+
+    /**
+     * @notice Retrieves the available balance of a wallet
+     *
+     * @param _userId user identifier
+     * @return uint256 available balance
+     */
+    function _balanceOfWallet(bytes32 _userId) internal view returns (uint256) {
         address walletAddress = wallets.get(uint256(_userId));
-        return balanceOfWallet(walletAddress);
+        return _balanceOfWallet(walletAddress);
     }
 
     /**
@@ -240,7 +154,17 @@ contract Controller is
      * @param _walletAddress wallet address
      * @return uint256 available balance
      */
-    function balanceOfWallet(address _walletAddress) public view returns (uint256) {
+    function balanceOfWallet(address _walletAddress) external view override returns (uint256) {
+        return _balanceOfWallet(_walletAddress);
+    }
+
+    /**
+     * @notice Retrieves the available balance of a wallet
+     *
+     * @param _walletAddress wallet address
+     * @return uint256 available balance
+     */
+    function _balanceOfWallet(address _walletAddress) internal view returns (uint256) {
         IWallet wallet = IWallet(_walletAddress);
         return wallet.availableBalance();
     }
@@ -251,7 +175,17 @@ contract Controller is
      * @param _userId user identifier
      * @return address of user's contract
      */
-    function getWalletAddress(bytes32 _userId) public view userExist(_userId) returns (address) {
+    function getWalletAddress(bytes32 _userId) external view override userExist(_userId) returns (address) {
+        return _getWalletAddress(_userId);
+    }
+
+    /**
+     * @notice retrieve contract address for a Wallet
+     *
+     * @param _userId user identifier
+     * @return address of user's contract
+     */
+    function _getWalletAddress(bytes32 _userId) internal view returns (address) {
         return wallets.get(uint256(_userId));
     }
 
@@ -260,7 +194,7 @@ contract Controller is
      * @dev Used for iterating the complete list of wallets
      *
      */
-    function getWalletAddressAtIndex(uint256 _index) external view returns (address) {
+    function getWalletAddressAtIndex(uint256 _index) external view override returns (address) {
         // .at function returns a tuple of (uint256, address)
         address walletAddress;
         (, walletAddress) = wallets.at(_index);
@@ -272,7 +206,7 @@ contract Controller is
      * @notice Get count of wallets
      *
      */
-    function getWalletCount() external view returns (uint256) {
+    function getWalletCount() external view override returns (uint256) {
         return wallets.length();
     }
 
@@ -296,7 +230,7 @@ contract Controller is
         uint256 _value,
         uint256 _roundUpValue
     )
-        external
+        external override
         greaterThanZero(_value)
         userExist(_fromUserId)
         balanceAvailable(_fromUserId, (_value + _roundUpValue))
@@ -307,8 +241,8 @@ contract Controller is
         returns (bool)
     {
         bool success = _transfer(
-            getWalletAddress(_fromUserId),
-            getWalletAddress(_toUserId),
+            _getWalletAddress(_fromUserId),
+            _getWalletAddress(_toUserId),
             _value
         );
         if (success) emit TransferToEvent(_fromUserId, _toUserId, _value);
@@ -333,7 +267,7 @@ contract Controller is
         uint256 _value,
         uint256 _roundUpValue
     )
-        external
+        external override
         greaterThanZero(_value)
         userExist(_fromUserId)
         balanceAvailable(_fromUserId, (_value + _roundUpValue))
@@ -342,7 +276,7 @@ contract Controller is
         whenNotPaused
         returns (bool)
     {
-        bool success = _transfer(getWalletAddress(_fromUserId), _toAddress, _value);
+        bool success = _transfer(_getWalletAddress(_fromUserId), _toAddress, _value);
         if (success) emit TransferToEvent(_fromUserId, _toAddress, _value);
 
         if (_roundUpValue > 0) {
@@ -375,11 +309,11 @@ contract Controller is
      */
     function _roundUp(bytes32 _fromUserId, uint256 _roundUpValue) internal returns (bool) {
         bool success = _transfer(
-            getWalletAddress(_fromUserId),
+            _getWalletAddress(_fromUserId),
             communityChestAddress,
             _roundUpValue
         );
-        if (success) emit TransferToEvent(_fromUserId, communityChestAddress, _roundUpValue);
+        if (success) emit RoundUpEvent(_fromUserId, communityChestAddress, _roundUpValue);
         return success;
     }
 
@@ -390,7 +324,7 @@ contract Controller is
      * @param _value    Amount to deposit
      */
     function deposit(bytes32 _userId, uint256 _value)
-        external
+        external override
         greaterThanZero(_value)
         userExist(_userId)
         onlyRole(OPERATOR_ROLE)
@@ -407,8 +341,8 @@ contract Controller is
      * @param _userId   User identifier
      * @param _value    Amount to deposit
      */
-    function _deposit(bytes32 _userId, uint256 _value) private returns (bool) {
-        address walletAddress = getWalletAddress(_userId);
+    function _deposit(bytes32 _userId, uint256 _value) internal returns (bool) {
+        address walletAddress = _getWalletAddress(_userId);
         erc20Token.mint(walletAddress, _value);
         emit UserDeposit(_userId, msg.sender, _value);
         return true;
@@ -420,14 +354,7 @@ contract Controller is
      * @param _userId   User identifier
      * @param _value    Amount to withdraw
      */
-    function withdraw(bytes32 _userId, uint256 _value)
-        external
-        greaterThanZero(_value)
-        userExist(_userId)
-        onlyRole(OPERATOR_ROLE)
-        nonReentrant
-        whenNotPaused
-        returns (bool)
+    function withdraw(bytes32 _userId, uint256 _value) external override greaterThanZero(_value) userExist(_userId) onlyRole(OPERATOR_ROLE) nonReentrant whenNotPaused returns (bool)
     {
         return _withdraw(_userId, _value);
     }
@@ -438,8 +365,8 @@ contract Controller is
      * @param _userId   User identifier
      * @param _value    Amount to withdraw
      */
-    function _withdraw(bytes32 _userId, uint256 _value) private returns (bool) {
-        address walletAddress = getWalletAddress(_userId);
+    function _withdraw(bytes32 _userId, uint256 _value) internal returns (bool) {
+        address walletAddress = _getWalletAddress(_userId);
 
         // Withdraw full amount to Controller
         IWallet(walletAddress).withdraw(_value);
@@ -476,7 +403,7 @@ contract Controller is
      * @param _userId user identifier
      */
     function newWallet(bytes32 _userId)
-        external
+        external override
         onlyRole(OPERATOR_ROLE)
         nonReentrant
         whenNotPaused
@@ -510,7 +437,7 @@ contract Controller is
      *
      * @param _newFactoryAddress   new factory address
      */
-    function setWalletFactory(address _newFactoryAddress) external onlyOwner {
+    function setWalletFactory(address _newFactoryAddress) external override onlyOwner {
         _setWalletFactory(_newFactoryAddress);
     }
 
@@ -519,7 +446,7 @@ contract Controller is
      *
      * @param _newFactoryAddress   new factory address
      */
-    function _setWalletFactory(address _newFactoryAddress) private {
+    function _setWalletFactory(address _newFactoryAddress) internal {
         address oldAddress = address(walletFactory);
         walletFactory = IWalletFactory(_newFactoryAddress);
         emit FactoryUpdated(oldAddress, _newFactoryAddress);
@@ -533,7 +460,7 @@ contract Controller is
      * @param newOwner new owner of this contract
      *
      */
-    function transferContractOwnership(address newOwner) public onlyOwner {
+    function transferContractOwnership(address newOwner) external override onlyOwner {
         super.transferOwnership(newOwner);
     }
 
@@ -546,8 +473,8 @@ contract Controller is
      * @param userId current owner of the wallet
      *
      */
-    function transferWalletOwnership(address newOwner, bytes32 userId) public onlyOwner {
-        address walletAddress = getWalletAddress(userId);
+    function transferWalletOwnership(address newOwner, bytes32 userId) external override userExist(userId) onlyOwner {
+        address walletAddress = _getWalletAddress(userId);
         IWallet user = IWallet(walletAddress);
         user.transferController(newOwner);
     }
@@ -556,9 +483,11 @@ contract Controller is
      * @notice Update implementation address for wallets
      *
      * @param _newLogic New implementation logic for wallet proxies
+     * @dev If the number of wallets is sufficiently large this 
+     *      function may run out of gas
      *
      */
-    function updateWalletImplementation(address _newLogic) external onlyOwner {
+    function updateWalletImplementation(address _newLogic) external override onlyOwner {
         uint256 i;
         for (i = 0; i < wallets.length(); i++) {
             address walletAddress;
@@ -573,7 +502,7 @@ contract Controller is
      *
      * @dev Requirements: The contract must not be paused.
      */
-    function pause() external onlyOwner nonReentrant {
+    function pause() external override onlyOwner nonReentrant {
         _pause();
     }
 
@@ -582,7 +511,7 @@ contract Controller is
      *
      * @dev Requirements: The contract must be paused.
      */
-    function unpause() external onlyOwner nonReentrant {
+    function unpause() external override onlyOwner nonReentrant {
         _unpause();
     }
 
@@ -592,7 +521,7 @@ contract Controller is
      * @dev The contract must be paused
      * @dev Sends erc20 to current owner
      */
-    function withdrawToOwner() external onlyOwner whenPaused nonReentrant {
+    function withdrawToOwner() external override onlyOwner whenPaused nonReentrant {
         uint256 balanceOf = erc20Token.balanceOf(address(this));
         erc20Token.transfer(owner(), balanceOf);
     }
@@ -602,7 +531,7 @@ contract Controller is
      *
      * @param _communityChest new address
      */
-    function setCommunityChest(address _communityChest) external onlyOwner {
+    function setCommunityChest(address _communityChest) external override onlyOwner {
         address oldAddress = communityChestAddress;
         communityChestAddress = _communityChest;
         emit CommunityChestUpdated(oldAddress, _communityChest);
@@ -613,7 +542,7 @@ contract Controller is
      *
      * @param _humanityCashAddress new address
      */
-    function setHumanityCashAddress(address _humanityCashAddress) external onlyOwner {
+    function setHumanityCashAddress(address _humanityCashAddress) external override onlyOwner {
         address oldAddress = humanityCashAddress;
         humanityCashAddress = _humanityCashAddress;
         emit HumanityCashUpdated(oldAddress, _humanityCashAddress);
@@ -625,7 +554,7 @@ contract Controller is
      * @param _numerator   Redemption fee numerator
      * @param _denominator Redemption fee denominator
      */
-    function setRedemptionFee(int256 _numerator, int256 _denominator) external onlyOwner {
+    function setRedemptionFee(int256 _numerator, int256 _denominator) external override onlyOwner {
         int256 oldNumerator = redemptionFeeNumerator;
         int256 oldDenominator = redemptionFeeDenominator;
         redemptionFeeNumerator = _numerator;

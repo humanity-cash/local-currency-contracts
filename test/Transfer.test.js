@@ -67,6 +67,8 @@ contract("Controller.Transfer", async (accounts) => {
 		const payment = utils.toWei("8.88", "ether");
 		const roundUp = utils.toWei("1.12", "ether");
 
+		const communityChestAddress = await controller.communityChestAddress();
+
 		const result = await controller.methods[
 			"transfer(bytes32,address,uint256,uint256)"
 		](walletId, someone, payment, roundUp, {
@@ -79,10 +81,10 @@ contract("Controller.Transfer", async (accounts) => {
 				ev._amt == payment
 			);
 		});
-		truffleAssert.eventEmitted(result, "TransferToEvent", (ev) => {
+		truffleAssert.eventEmitted(result, "RoundUpEvent", (ev) => {
 			return (
 				ev._fromUserId == walletId &&
-				ev._toUserId == toBytes32("COMMUNITY_CHEST") &&
+				ev._toAddress == communityChestAddress &&
 				ev._amt == roundUp
 			);
 		});
