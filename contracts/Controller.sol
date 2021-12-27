@@ -105,6 +105,14 @@ contract Controller is
         _;
     }
 
+        /**
+     * @notice Enforces only owner or operator roles
+     */
+    modifier onlyOwnerOrOperator(address _address) {
+        require(hasRole(OPERATOR_ROLE, _address) || (_address == owner()), "ERR_ACCESS_CONTROL");
+        _;
+    }
+
     /**
      * @notice Enforces value to not be greater than a user's available balance
      */
@@ -527,7 +535,7 @@ contract Controller is
      *
      * @dev Requirements: The contract must not be paused.
      */
-    function pause() external override onlyOwner nonReentrant {
+    function pause() external override onlyOwnerOrOperator(msg.sender) nonReentrant {
         _pause();
     }
 
@@ -536,7 +544,7 @@ contract Controller is
      *
      * @dev Requirements: The contract must be paused.
      */
-    function unpause() external override onlyOwner nonReentrant {
+    function unpause() external override onlyOwnerOrOperator(msg.sender) nonReentrant {
         _unpause();
     }
 

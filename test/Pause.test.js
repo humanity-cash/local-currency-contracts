@@ -14,7 +14,7 @@ contract("Controller.Pause", async (accounts) => {
 		deployment = await deploy(accounts);
 	});
 
-	it("Should be able to pause", async () => {
+	it("Should be able to pause from deployer (owner)", async () => {
 		const { controller } = deployment;
 		await controller.pause();
 	});
@@ -41,9 +41,9 @@ contract("Controller.Pause", async (accounts) => {
 		await token.transfer(user1, oneToken, { from: user2 });
 	});
 
-	it("Should be able to unpause", async () => {
+	it("Should be able to unpause (from operator1)", async () => {
 		const { controller } = deployment;
-		await controller.unpause();
+		await controller.unpause({ from: operator1 });
 	});
 
 	it("Should fail to unpause when not paused", async () => {
