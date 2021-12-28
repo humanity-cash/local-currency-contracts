@@ -24,6 +24,12 @@ contract("Controller.Pause", async (accounts) => {
 		await truffleAssert.reverts(controller.pause(), "Pausable: paused");
 	});
 
+	it("Should fail to create a new wallet when paused", async () => {
+		const { controller } = deployment;
+		const tmpUser = toBytes32(uuid());
+		await truffleAssert.reverts(controller.newWallet(tmpUser, {from: operator1}), "Pausable: paused");
+	});
+
 	it("Should be able to transfer tokens even when controller is paused", async () => {
 		const { controller, token } = await deploy(accounts);
 
@@ -37,6 +43,7 @@ contract("Controller.Pause", async (accounts) => {
 			zeroTokens,
 			{ from: operator1 }
 		);
+		await controller.pause({from: operator1});
 		await token.transfer(user2, oneToken, { from: user1 });
 		await token.transfer(user1, oneToken, { from: user2 });
 	});
