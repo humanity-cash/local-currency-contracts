@@ -12,6 +12,12 @@ Enforces values > 0 only
 
 
 
+### `onlyOwnerOrOperator(address _address)`
+
+Enforces only owner or operator roles
+
+
+
 ### `balanceAvailable(bytes32 _userId, uint256 _value)`
 
 Enforces value to not be greater than a user's available balance
@@ -46,7 +52,7 @@ Returns the storage, major, minor, and patch version of the contract.
 
 
 
-### `balanceOfWallet(bytes32 _userId) → uint256` (public)
+### `balanceOfWallet(bytes32 _userId) → uint256` (external)
 
 Retrieves the available balance of a wallet
 
@@ -54,7 +60,7 @@ Retrieves the available balance of a wallet
 
 
 
-### `balanceOfWallet(address _walletAddress) → uint256` (public)
+### `_balanceOfWallet(bytes32 _userId) → uint256` (internal)
 
 Retrieves the available balance of a wallet
 
@@ -62,7 +68,31 @@ Retrieves the available balance of a wallet
 
 
 
-### `getWalletAddress(bytes32 _userId) → address` (public)
+### `balanceOfWallet(address _walletAddress) → uint256` (external)
+
+Retrieves the available balance of a wallet
+
+
+
+
+
+### `_balanceOfWallet(address _walletAddress) → uint256` (internal)
+
+Retrieves the available balance of a wallet
+
+
+
+
+
+### `getWalletAddress(bytes32 _userId) → address` (external)
+
+retrieve contract address for a Wallet
+
+
+
+
+
+### `_getWalletAddress(bytes32 _userId) → address` (internal)
 
 retrieve contract address for a Wallet
 
@@ -117,9 +147,25 @@ Deposits tokens in the wallet identified by the given user id
 
 
 
+### `_deposit(bytes32 _userId, uint256 _value) → bool` (internal)
+
+Internal implementation of deposits tokens in the wallet identified by the given user id
+
+
+
+
+
 ### `withdraw(bytes32 _userId, uint256 _value) → bool` (external)
 
 Withdraws tokens from the wallet identified by the given user id
+
+
+
+
+
+### `_withdraw(bytes32 _userId, uint256 _value) → bool` (internal)
+
+Internal implementation of withdraw tokens in the wallet identified by the given user id
 
 
 
@@ -149,7 +195,15 @@ Public update to a new Wallet Factory
 
 
 
-### `transferContractOwnership(address newOwner)` (public)
+### `_setWalletFactory(address _newFactoryAddress)` (internal)
+
+Internal implementation of update to a new Wallet Factory
+
+
+
+
+
+### `transferContractOwnership(address newOwner)` (external)
 
 Transfers ownership of the contract to a new account (`newOwner`).
 Can only be called by the current owner.
@@ -159,7 +213,7 @@ Can only be called by the current owner.
 
 
 
-### `transferWalletOwnership(address newOwner, bytes32 userId)` (public)
+### `transferWalletOwnership(address newOwner, bytes32 userId)` (external)
 
 Transfers ownership of the wallet to a new account (`newOwner`).
 Can only be called by the current owner.
@@ -175,6 +229,8 @@ Update implementation address for wallets
 
 
 
+If the number of wallets is sufficiently large this
+     function may run out of gas
 
 
 ### `pause()` (external)
@@ -210,50 +266,26 @@ Update community chest address
 
 
 
+### `setHumanityCashAddress(address _humanityCashAddress)` (external)
 
-### `NewUser(bytes32 _userId, address _walletAddress)`
-
-Triggered when a new user has been created
-
-
-
-
-
-### `UserDeposit(bytes32 _userId, address _operator, uint256 _value)`
-
-Triggered when a user has deposited
+Update Humanity Cash Address
 
 
 
 
 
-### `UserWithdrawal(bytes32 _userId, address _operator, uint256 _value)`
+### `setRedemptionFee(int256 _numerator, int256 _denominator)` (external)
 
-Triggered when a user has withdrawn
-
-
-
-
-
-### `TransferToEvent(bytes32 _fromUserId, bytes32 _toUserId, uint256 _amt)`
-
-Triggered when an amount has been transferred from one wallet to another
+Set redemption fee
 
 
 
 
 
-### `TransferToEvent(bytes32 _fromUserId, address _toAddress, uint256 _amt)`
+### `setRedemptionFeeMinimum(uint256 _redemptionFeeMinimum)` (external)
 
-Triggered when an amount has been transferred from one wallet to another
+Set redemption fee minimum
 
-
-
-
-
-### `FactoryUpdated(address _oldFactoryAddress, address _newFactoryAddress)`
-
-Triggered when the Wallet Factory is updated
 
 
 
