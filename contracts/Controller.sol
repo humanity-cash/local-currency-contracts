@@ -40,9 +40,9 @@ contract Controller is
     bytes32 public constant HUMANITY_CASH = keccak256("HUMANITY_CASH");
     address public communityChestAddress;
     address public humanityCashAddress;
-    int256 redemptionFeeNumerator;
-    int256 redemptionFeeDenominator;
-    uint256 redemptionFeeMinimum;
+    int256 public redemptionFeeNumerator;
+    int256 public redemptionFeeDenominator;
+    uint256 public redemptionFeeMinimum;
     ERC20PresetMinterPauser public erc20Token;
     IWalletFactory public walletFactory;
 
