@@ -33,7 +33,7 @@ const advanceBlock = () => {
 				method: "evm_mine",
 				id: new Date().getTime(),
 			},
-			(err, result) => {
+			(err) => {
 				if (err) {
 					return reject(err);
 				}
@@ -46,10 +46,10 @@ const advanceBlock = () => {
 };
 module.exports.advanceBlock = advanceBlock;
 
-module.exports.advanceTimeAndBlockNTimes = async (n, epochSize) => {
+module.exports.advanceTimeAndBlockNTimes = async (n) => {
 	// console.log(`Time travelling ${n} blocks with epoch size ${epochSize}`);
 	for (let i = 0; i < n; i++) {
-		const newBlock = await advanceTimeAndBlock();
+		await advanceTimeAndBlock();
 		// if((newBlock.number % epochSize) === 0)
 		//     console.log(`Block ${newBlock.number}, hash ${newBlock.hash}, epoch ${Math.round(newBlock.number/epochSize)}`);
 	}

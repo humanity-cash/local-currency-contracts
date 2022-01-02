@@ -7,7 +7,7 @@ const getMnemonic = (network) => {
 	return process.env.MNEMONIC;
 };
 
-// celos derivation path!
+// celo's derivation path!
 const celoDerivationPath = "m/44'/52752'/0'/0/";
 
 module.exports = {
@@ -31,8 +31,8 @@ module.exports = {
 					derivationPath: celoDerivationPath,
 				}),
 			network_id: "*",
-			gas: 6721975,
 			gasPrice: 20000000000,
+			gas: 13000000,
 			deploymentPollingInterval: 8000,
 			skipDryRun: true,
 		},
@@ -74,7 +74,7 @@ module.exports = {
 
 	// Set default mocha options here, use special reporters etc.
 	mocha: {
-		timeout: 10000,
+		timeout: 60000,
 		useColors: true,
 	},
 

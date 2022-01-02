@@ -1,0 +1,96 @@
+Starting migrations...
+======================
+> Network name:    'baklava'
+> Network id:      62320
+> Block gas limit: 0 (0x0)
+
+
+1_initial_migration.js
+======================
+
+   Deploying 'Migrations'
+   ----------------------
+   > transaction hash:    0x4583ee0ee7393194d6dc5300a10bf14606784867b0545d43b336ecf7f46ad155
+   > Blocks: 0            Seconds: 0
+   > contract address:    0xEC47b47a040e07a11A95874BEbaA06e475f71075
+   > block number:        6356743
+   > block timestamp:     1625151008
+   > account:             0x9E7e40A7D134816C34d1eb804Ba63e73f11bE6c5
+   > balance:             9.991827327
+   > gas used:            153118 (0x2561e)
+   > gas price:           0.5 gwei
+   > value sent:          0 ETH
+   > total cost:          0.000076559 ETH
+
+Migrations address 0xEC47b47a040e07a11A95874BEbaA06e475f71075
+
+   Deploying 'Wallet'
+   ------------------
+   > transaction hash:    0x0bc780ca73e2ed7479876f3faf4b1046d917ac472d9672621d01008ba70270e4
+   > Blocks: 2            Seconds: 8
+   > contract address:    0x941A99E5AF45843c4A20e4c51b6488d83E8d07Eb
+   > block number:        6356745
+   > block timestamp:     1625151018
+   > account:             0x9E7e40A7D134816C34d1eb804Ba63e73f11bE6c5
+   > balance:             9.991399674
+   > gas used:            855306 (0xd0d0a)
+   > gas price:           0.5 gwei
+   > value sent:          0 ETH
+   > total cost:          0.000427653 ETH
+
+
+   Deploying 'Token'
+   -----------------
+   > transaction hash:    0x0f1b2d75ed5b2984557586d5a264944a901fc814d78d937e3f16015885b73bb4
+   > Blocks: 0            Seconds: 0
+   > contract address:    0x5bA6Ade11a4A7e4D4654a31E998bC6507c14B5D0
+   > block number:        6356746
+   > block timestamp:     1625151023
+   > account:             0x9E7e40A7D134816C34d1eb804Ba63e73f11bE6c5
+   > balance:             9.9904914315
+   > gas used:            1816485 (0x1bb7a5)
+   > gas price:           0.5 gwei
+   > value sent:          0 ETH
+   > total cost:          0.0009082425 ETH
+
+
+   Deploying 'WalletFactory'
+   -------------------------
+   > transaction hash:    0xbf07ee5d5ad46ad440bd43dff4fdbccb1af5643cdfa40cafe85e59be780ba55c
+   > Blocks: 0            Seconds: 0
+   > contract address:    0x8Ca603d7c461024F433a0D9757BDc883Bd350B8F
+   > block number:        6356747
+   > block timestamp:     1625151028
+   > account:             0x9E7e40A7D134816C34d1eb804Ba63e73f11bE6c5
+   > balance:             9.9895919195
+   > gas used:            1799024 (0x1b7370)
+   > gas price:           0.5 gwei
+   > value sent:          0 ETH
+   > total cost:          0.000899512 ETH
+
+
+   Deploying 'Controller'
+   ----------------------
+   > transaction hash:    0x26c5ad3c2f2ac9c1637c15ed6a187bd09832d6405c55bafc2cc4f088100d2bce
+   > Blocks: 0            Seconds: 0
+   > contract address:    0xdE996B9b11078Cfb733d1bFc5ac04D9e09c9a091
+   > block number:        6356748
+   > block timestamp:     1625151033
+   > account:             0x9E7e40A7D134816C34d1eb804Ba63e73f11bE6c5
+   > balance:             9.988944175
+   > gas used:            1295489 (0x13c481)
+   > gas price:           0.5 gwei
+   > value sent:          0 ETH
+   > total cost:          0.0006477445 ETH
+
+
+   > Saving migration to chain.
+   > Saving artifacts
+   -------------------------------------
+   > Total cost:         0.002959711 ETH
+
+
+Summary
+=======
+> Total deployments:   5
+> Final cost:          0.002959711 ETH
