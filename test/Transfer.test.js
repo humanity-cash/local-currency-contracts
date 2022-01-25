@@ -90,6 +90,77 @@ contract("Controller.Transfer", async (accounts) => {
 		});
 	});
 
+	it("Should transfer 1 token to new wallet (zero round-up) with memo", async () => {
+		const { controller } = deployment;
+		const newWalletId = toBytes32(uuid());
+		await controller.newWallet(newWalletId, { from: operator2 });
+		const result = await controller.methods["transferWithMemo(bytes32,bytes32,uint256,uint256,string)"](
+			walletId,
+			newWalletId,
+			oneToken,
+			zeroTokens,
+			"Cashier IMEI 357652086103717",
+			{
+				from: operator1,
+			}
+		);
+		truffleAssert.eventEmitted(result, "TransferToEventWithMemo", (ev) => {
+			return (
+				ev._fromUserId == walletId &&
+				ev._toUserId == newWalletId &&
+				ev._amt == oneToken &&
+				ev._memo == "Cashier IMEI 357652086103717"
+			);
+		});
+	});
+
+	it("Should transfer 1 token to someone (zero round-up) with memo", async () => {
+		const { controller } = deployment;
+		const result = await controller.methods[
+			"transferWithMemo(bytes32,address,uint256,uint256,string)"
+		](walletId, someone, oneToken, zeroTokens, "Cashier IMEI 357652086103717", {
+			from: operator1,
+		});
+		truffleAssert.eventEmitted(result, "TransferToEventWithMemo", (ev) => {
+			return (
+				ev._fromUserId == walletId &&
+				ev._toAddress == someone &&
+				ev._amt == oneToken &&
+				ev._memo == "Cashier IMEI 357652086103717"
+			);
+		});
+	});
+
+	it("Should transfer 8.88 token to someone (1.12 token round-up) with memo", async () => {
+		const { controller } = deployment;
+
+		const payment = utils.toWei("8.88", "ether");
+		const roundUp = utils.toWei("1.12", "ether");
+
+		const communityChestAddress = await controller.communityChestAddress();
+
+		const result = await controller.methods[
+			"transferWithMemo(bytes32,address,uint256,uint256,string)"
+		](walletId, someone, payment, roundUp, "Cashier IMEI 357652086103717", {
+			from: operator1,
+		});
+		truffleAssert.eventEmitted(result, "TransferToEventWithMemo", (ev) => {
+			return (
+				ev._fromUserId == walletId &&
+				ev._toAddress == someone &&
+				ev._amt == payment &&
+				ev._memo == "Cashier IMEI 357652086103717"
+			);
+		});
+		truffleAssert.eventEmitted(result, "RoundUpEvent", (ev) => {
+			return (
+				ev._fromUserId == walletId &&
+				ev._toAddress == communityChestAddress &&
+				ev._amt == roundUp
+			);
+		});
+	});
+
 	it("Should fail to transfer with zero value even if funds are available", async () => {
 		const { controller } = deployment;
 
