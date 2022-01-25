@@ -154,6 +154,9 @@ module.exports = (deployer, network, accounts) => {
 		await controller.grantRole(OPERATOR_ROLE, operator1);
 		await controller.grantRole(OPERATOR_ROLE, operator2);
 
+		// Grant "operator" to the initialOwner
+		await controller.grantRole(OPERATOR_ROLE, configToUse.initialOwner);
+
 		// Give ownership of controller to the operational account
 		await controller.transferOwnership(configToUse.initialOwner);
 
