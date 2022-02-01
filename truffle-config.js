@@ -42,6 +42,7 @@ module.exports = {
 				new HDWalletProvider({
 					mnemonic: getMnemonic("alfajores"),
 					providerOrUrl: `wss://alfajores-forno.celo-testnet.org/ws`,
+					//providerOrUrl: `https://celo-alfajores--rpc.datahub.figment.io/apikey/<apikey>`,
 					derivationPath: celoDerivationPath,
 				}),
 			network_id: 44787, // Alfajores network id
