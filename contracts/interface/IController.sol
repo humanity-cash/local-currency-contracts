@@ -55,6 +55,26 @@ interface IController {
     event TransferToEvent(bytes32 indexed _fromUserId, address indexed _toAddress, uint256 _amt);
 
     /**
+     * @notice Triggered when an amount has been transferred from one wallet to another
+     *
+     * @param _fromUserId       Hashed bytes32 of the sender
+     * @param _toUserId         Hashed bytes32 of the receiver
+     * @param _amt              Amount of the transaction
+     * @param _memo             Memo to send along with this transfer
+     */
+    event TransferToEventWithMemo(bytes32 indexed _fromUserId, bytes32 indexed _toUserId, uint256 _amt, string _memo);
+
+    /**
+     * @notice Triggered when an amount has been transferred from one wallet to another
+     *
+     * @param _fromUserId       Hashed bytes32 of the sender
+     * @param _toAddress        Address of the receiver
+     * @param _amt              Amount of the transaction
+     * @param _memo             Memo to send along with this transfer
+     */
+    event TransferToEventWithMemo(bytes32 indexed _fromUserId, address indexed _toAddress, uint256 _amt, string _memo);
+
+    /**
      * @notice Triggered when a round up has been sent from one account to another
      *
      * @param _fromUserId       Hashed bytes32 of the sender
@@ -204,6 +224,41 @@ interface IController {
         address _toAddress,
         uint256 _value,
         uint256 _roundUpValue
+    ) external returns (bool);
+
+    /**
+     * @notice Transfers a local currency token between two existing wallets with an attached memo field
+     *
+     * @param _fromUserId   User identifier
+     * @param _toUserId     Receiver identifier
+     * @param _value        Amount to transfer
+     * @param _roundUpValue Round up value to transfer (can be zero)
+     * @param _memo         Memo to send with this transfer
+     */
+    function transferWithMemo(
+        bytes32 _fromUserId,
+        bytes32 _toUserId,
+        uint256 _value,
+        uint256 _roundUpValue,
+        string calldata _memo
+
+    ) external returns (bool);
+
+    /**
+     * @notice Transfers a local currency token between two existing wallets with an attached memo field
+     *
+     * @param _fromUserId   User identifier
+     * @param _toAddress    Receiver identifier
+     * @param _value        Amount to transfer
+     * @param _roundUpValue Round up value to transfer (can be zero)
+     * @param _memo         Memo to send with this transfer
+     */
+    function transferWithMemo(
+        bytes32 _fromUserId,
+        address _toAddress,
+        uint256 _value,
+        uint256 _roundUpValue,
+        string calldata _memo
     ) external returns (bool);
 
     /**

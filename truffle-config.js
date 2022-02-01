@@ -42,6 +42,7 @@ module.exports = {
 				new HDWalletProvider({
 					mnemonic: getMnemonic("alfajores"),
 					providerOrUrl: `wss://alfajores-forno.celo-testnet.org/ws`,
+					//providerOrUrl: `https://celo-alfajores--rpc.datahub.figment.io/apikey/<apikey>`,
 					derivationPath: celoDerivationPath,
 				}),
 			network_id: 44787, // Alfajores network id
@@ -53,7 +54,7 @@ module.exports = {
 			provider: () =>
 				new HDWalletProvider({
 					mnemonic: getMnemonic("baklava"),
-					providerOrUrl: `wss://baklava-forno.celo-testnet.org/ws`,
+					providerOrUrl: `https://baklava-forno.celo-testnet.org/`,
 					derivationPath: celoDerivationPath,
 				}),
 			network_id: 62320, // Baklava network id
@@ -78,7 +79,7 @@ module.exports = {
 		useColors: true,
 	},
 
-	plugins: ["solidity-coverage"],
+	plugins: ["solidity-coverage", "truffle-contract-size"],
 
 	// Configure your compilers
 	compilers: {

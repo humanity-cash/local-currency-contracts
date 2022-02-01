@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const IPFS = require('ipfs-http-client');
+const ipfsClient = require('ipfs-http-client');
 const shell = require('shelljs');
 const path = require('path');
 const log = console.log;
@@ -10,7 +10,7 @@ const sleep = (ms) => {
 }
 
 async function main(){
-  const ipfs = IPFS({
+  const ipfs = ipfsClient({
     host:'ipfs.infura.io',
     port: '5001',
     protocol: 'https'

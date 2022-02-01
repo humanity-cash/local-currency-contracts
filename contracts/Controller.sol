@@ -94,7 +94,7 @@ contract Controller is
             uint256
         )
     {
-        return (1, 2, 0, 2);
+        return (1, 2, 0, 3);
     }
 
     /**
@@ -233,6 +233,46 @@ contract Controller is
      **********************************************************************/
 
     /**
+     * @notice Transfers a local currency token between two existing wallets with an attached memo
+     *
+     * @param _fromUserId   User identifier
+     * @param _toUserId     Receiver identifier
+     * @param _value        Amount to transfer
+     * @param _roundUpValue Round up value to transfer (can be zero)
+     * @param _memo         Memo to send with the transfer 
+     */
+    function transferWithMemo(
+        bytes32 _fromUserId,
+        bytes32 _toUserId,
+        uint256 _value,
+        uint256 _roundUpValue,
+        string calldata _memo
+    )
+        external
+        override
+        greaterThanZero(_value)
+        userExist(_fromUserId)
+        balanceAvailable(_fromUserId, (_value + _roundUpValue))
+        userExist(_toUserId)
+        onlyRole(OPERATOR_ROLE)
+        nonReentrant
+        whenNotPaused
+        returns (bool)
+    {
+        bool success = _transfer(
+            _getWalletAddress(_fromUserId),
+            _getWalletAddress(_toUserId),
+            _value
+        );
+        if (success) emit TransferToEventWithMemo(_fromUserId, _toUserId, _value, _memo);
+
+        if (_roundUpValue > 0) {
+            success = success && _roundUp(_fromUserId, _roundUpValue);
+        }
+        return success;
+    }
+
+    /**
      * @notice Transfers a local currency token between two existing wallets
      *
      * @param _fromUserId   User identifier
@@ -263,6 +303,41 @@ contract Controller is
             _value
         );
         if (success) emit TransferToEvent(_fromUserId, _toUserId, _value);
+
+        if (_roundUpValue > 0) {
+            success = success && _roundUp(_fromUserId, _roundUpValue);
+        }
+        return success;
+    }
+
+/**
+     * @notice Transfers a local currency token between two existing wallets with an attached memo field
+     *
+     * @param _fromUserId   User identifier
+     * @param _toAddress    Receiver identifier
+     * @param _value        Amount to transfer
+     * @param _roundUpValue Round up value to transfer (can be zero)
+     * @param _memo         Memo to send with the transfer
+     */
+    function transferWithMemo(
+        bytes32 _fromUserId,
+        address _toAddress,
+        uint256 _value,
+        uint256 _roundUpValue,
+        string calldata _memo
+    )
+        external
+        override
+        greaterThanZero(_value)
+        userExist(_fromUserId)
+        balanceAvailable(_fromUserId, (_value + _roundUpValue))
+        onlyRole(OPERATOR_ROLE)
+        nonReentrant
+        whenNotPaused
+        returns (bool)
+    {
+        bool success = _transfer(_getWalletAddress(_fromUserId), _toAddress, _value);
+        if (success) emit TransferToEventWithMemo(_fromUserId, _toAddress, _value, _memo);
 
         if (_roundUpValue > 0) {
             success = success && _roundUp(_fromUserId, _roundUpValue);
