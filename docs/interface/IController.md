@@ -62,6 +62,22 @@ Transfers a local currency token between two existing wallets
 
 
 
+### `transferWithMemo(bytes32 _fromUserId, bytes32 _toUserId, uint256 _value, uint256 _roundUpValue, string _memo) → bool` (external)
+
+Transfers a local currency token between two existing wallets with an attached memo field
+
+
+
+
+
+### `transferWithMemo(bytes32 _fromUserId, address _toAddress, uint256 _value, uint256 _roundUpValue, string _memo) → bool` (external)
+
+Transfers a local currency token between two existing wallets with an attached memo field
+
+
+
+
+
 ### `deposit(bytes32 _userId, uint256 _value) → bool` (external)
 
 Deposits tokens in the wallet identified by the given user id
@@ -221,6 +237,22 @@ Triggered when an amount has been transferred from one wallet to another
 
 
 
+### `TransferToEventWithMemo(bytes32 _fromUserId, bytes32 _toUserId, uint256 _amt, string _memo)`
+
+Triggered when an amount has been transferred from one wallet to another
+
+
+
+
+
+### `TransferToEventWithMemo(bytes32 _fromUserId, address _toAddress, uint256 _amt, string _memo)`
+
+Triggered when an amount has been transferred from one wallet to another
+
+
+
+
+
 ### `RoundUpEvent(bytes32 _fromUserId, address _toAddress, uint256 _amt)`
 
 Triggered when a round up has been sent from one account to another
@@ -272,6 +304,8 @@ Triggered when the Redemption Fee Minimum is updated
 ### `RedemptionFee(address _redemptionFeeAddress, uint256 _redemptionFee)`
 
 Triggered when a redemption (withdrawal) fee is collected
+
+
 
 
 
