@@ -115,9 +115,25 @@ Get count of wallets
 
 
 
+### `transferWithMemo(bytes32 _fromUserId, bytes32 _toUserId, uint256 _value, uint256 _roundUpValue, string _memo) → bool` (external)
+
+Transfers a local currency token between two existing wallets with an attached memo
+
+
+
+
+
 ### `transfer(bytes32 _fromUserId, bytes32 _toUserId, uint256 _value, uint256 _roundUpValue) → bool` (external)
 
 Transfers a local currency token between two existing wallets
+
+
+
+
+
+### `transferWithMemo(bytes32 _fromUserId, address _toAddress, uint256 _value, uint256 _roundUpValue, string _memo) → bool` (external)
+
+Transfers a local currency token between two existing wallets with an attached memo field
 
 
 
@@ -285,6 +301,8 @@ Set redemption fee
 ### `setRedemptionFeeMinimum(uint256 _redemptionFeeMinimum)` (external)
 
 Set redemption fee minimum
+
+
 
 
 
