@@ -22,7 +22,7 @@
     "migrate": "npx truffle migrate",
     "migrate:baklava": "yarn build && yarn run ipfs && npx truffle migrate --network baklava",
     "migrate:alfajores": "yarn build && yarn run ipfs && npx truffle migrate --network alfajores",
-    "migrate:mainnet": "yarn build && yarn run ipfs && npx truffle migrate --network mainnet",
+    "migrate:mainnet": "yarn build && npx truffle migrate --network mainnet",
     "migrate:local": "npx truffle migrate --network local",
     "test": "npx truffle test",
     "coverage": "npx truffle run coverage",

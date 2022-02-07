@@ -1,0 +1,185 @@
+yarn run v1.22.5
+$ yarn build && npx truffle migrate --network mainnet --reset
+$ npx truffle compile
+
+Compiling your contracts...
+===========================
+> Everything is up to date, there is nothing to compile.
+
+$ yarn export
+$ node ./scripts/export.js
+Controller
+ERC1967Proxy
+ERC20
+ERC20PresetMinterPauser
+Migrations
+ProxyAdmin
+Token
+TransparentUpgradeableProxy
+Wallet
+WalletFactory
+
+Finished.
+
+
+Compiling your contracts...
+===========================
+> Everything is up to date, there is nothing to compile.
+
+
+
+Starting migrations...
+======================
+> Network name:    'mainnet'
+> Network id:      42220
+> Block gas limit: 0 (0x0)
+
+
+1_initial_migration.js
+======================
+
+   Replacing 'Migrations'
+   ----------------------
+   > transaction hash:    0x36331f42e30ee9e8e5d19fdea778280532a91d1d35bfd2b72da9fd443d409ca0
+   > Blocks: 1            Seconds: 4
+   > contract address:    0x406799FE31837d68f095cfB0Ebc5A944cC52Eca8
+   > block number:        11328043
+   > block timestamp:     1644218817
+   > account:             0x31984aE8F14afC0658bdEEB00Cc97fe38982539c
+   > balance:             4.99509045611083759
+   > gas used:            153118 (0x2561e)
+   > gas price:           0.5 gwei
+   > value sent:          0 ETH
+   > total cost:          0.000076559 ETH
+
+Migrations address 0x406799FE31837d68f095cfB0Ebc5A944cC52Eca8
+
+   Replacing 'ABDKMath64x64'
+   -------------------------
+   > transaction hash:    0x1e358ec9c642084ef1f7e7cad8272aba66b0c235a2636e03078895627cf98c9d
+   > Blocks: 1            Seconds: 4
+   > contract address:    0xBfB8C4e221911F561C193E4d1D047a5fd87071E1
+   > block number:        11328045
+   > block timestamp:     1644218827
+   > account:             0x31984aE8F14afC0658bdEEB00Cc97fe38982539c
+   > balance:             4.99505434761083759
+   > gas used:            72217 (0x11a19)
+   > gas price:           0.5 gwei
+   > value sent:          0 ETH
+   > total cost:          0.0000361085 ETH
+
+
+   Replacing 'Wallet'
+   ------------------
+   > transaction hash:    0x6772317402f15df2e6e3b264bdaaf5e725ea185a6ed810cfb92d31d5cd042fc9
+   > Blocks: 1            Seconds: 4
+   > contract address:    0x3F5D7E4264d8eE45361F1fe235093E1eD21C93a5
+   > block number:        11328047
+   > block timestamp:     1644218837
+   > account:             0x31984aE8F14afC0658bdEEB00Cc97fe38982539c
+   > balance:             4.99461511811083759
+   > gas used:            878459 (0xd677b)
+   > gas price:           0.5 gwei
+   > value sent:          0 ETH
+   > total cost:          0.0004392295 ETH
+
+
+   Replacing 'Token'
+   -----------------
+   > transaction hash:    0xf285bbdbba423b663503936429f047ed6278fb2f551ae293e118886721b0fa4e
+   > Blocks: 1            Seconds: 4
+   > contract address:    0x407AA28140AcE178ABbDe688719E645959f57bf1
+   > block number:        11328049
+   > block timestamp:     1644218847
+   > account:             0x31984aE8F14afC0658bdEEB00Cc97fe38982539c
+   > balance:             4.99372050961083759
+   > gas used:            1789217 (0x1b4d21)
+   > gas price:           0.5 gwei
+   > value sent:          0 ETH
+   > total cost:          0.0008946085 ETH
+
+
+   Replacing 'WalletFactory'
+   -------------------------
+   > transaction hash:    0x9648242539fdf09328216924b2a8b70629a6a7e3b89181a3b99bd6f4919683cc
+   > Blocks: 1            Seconds: 4
+   > contract address:    0x665eFA34C5BED95a88D617aAE62c221fab95e197
+   > block number:        11328051
+   > block timestamp:     1644218857
+   > account:             0x31984aE8F14afC0658bdEEB00Cc97fe38982539c
+   > balance:             4.99282982861083759
+   > gas used:            1781362 (0x1b2e72)
+   > gas price:           0.5 gwei
+   > value sent:          0 ETH
+   > total cost:          0.000890681 ETH
+
+
+   Replacing 'Controller'
+   ----------------------
+   > transaction hash:    0x4e93e70af1c4376d65fe3192e2b08d4ef1b14b1f2c887fdc08ef8a0ff7229812
+   > Blocks: 0            Seconds: 4
+   > contract address:    0xaeDa614c09Ee9F4eC32395ABb85D4dfdB5C5e7D4
+   > block number:        11328053
+   > block timestamp:     1644218867
+   > account:             0x31984aE8F14afC0658bdEEB00Cc97fe38982539c
+   > balance:             4.99053055461083759
+   > gas used:            4598548 (0x462b14)
+   > gas price:           0.5 gwei
+   > value sent:          0 ETH
+   > total cost:          0.002299274 ETH
+
+Dumping roles and ownership informations!
+
+Deployer: 0x31984aE8F14afC0658bdEEB00Cc97fe38982539c
+Initial Owner: 0x31984aE8F14afC0658bdEEB00Cc97fe38982539c
+
+
+Token 0x407AA28140AcE178ABbDe688719E645959f57bf1
+===========================
+Token is not ownable!
+Role Token MINTER_ROLE [ '0xaeDa614c09Ee9F4eC32395ABb85D4dfdB5C5e7D4' ]
+Role Token PAUSER_ROLE [ '0x31984aE8F14afC0658bdEEB00Cc97fe38982539c' ]
+Role Token ADMIN_ROLE []
+Role Token OPERATOR_ROLE []
+Role Token CONTROLLER_ROLE []
+Role Token DEFAULT_ADMIN_ROLE [ '0x31984aE8F14afC0658bdEEB00Cc97fe38982539c' ]
+===========================
+
+
+Controller 0xaeDa614c09Ee9F4eC32395ABb85D4dfdB5C5e7D4
+===========================
+Controller Owner: 0x31984aE8F14afC0658bdEEB00Cc97fe38982539c
+Role Controller MINTER_ROLE []
+Role Controller PAUSER_ROLE []
+Role Controller ADMIN_ROLE [ '0x31984aE8F14afC0658bdEEB00Cc97fe38982539c' ]
+Role Controller OPERATOR_ROLE [ '0x31984aE8F14afC0658bdEEB00Cc97fe38982539c' ]
+Role Controller CONTROLLER_ROLE []
+Role Controller DEFAULT_ADMIN_ROLE [ '0x31984aE8F14afC0658bdEEB00Cc97fe38982539c' ]
+===========================
+
+
+Wallet 0x3F5D7E4264d8eE45361F1fe235093E1eD21C93a5
+===========================
+Wallet is not ownable!
+Wallet has no roles specified!
+===========================
+
+
+WalletFactory 0x665eFA34C5BED95a88D617aAE62c221fab95e197
+===========================
+WalletFactory Owner: 0xaeDa614c09Ee9F4eC32395ABb85D4dfdB5C5e7D4
+WalletFactory has no roles specified!
+===========================
+
+
+
+   > Saving migration to chain.
+   > Saving artifacts
+   -------------------------------------
+   > Total cost:        0.0046364605 ETH
+
+
+Summary
+=======
+> Total deployments:   6
+> Final cost:          0.0046364605 ETH

@@ -150,9 +150,9 @@ module.exports = (deployer, network, accounts) => {
 			await token.renounceRole(MINTER_ROLE, deployerAccount);
 		}
 
-		// Grant "operator" role to the operators
-		await controller.grantRole(OPERATOR_ROLE, operator1);
-		await controller.grantRole(OPERATOR_ROLE, operator2);
+		// // Grant "operator" role to the operators
+		// await controller.grantRole(OPERATOR_ROLE, operator1);
+		// await controller.grantRole(OPERATOR_ROLE, operator2);
 
 		// Grant "operator" to the initialOwner
 		await controller.grantRole(OPERATOR_ROLE, configToUse.initialOwner);
