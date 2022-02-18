@@ -1,0 +1,161 @@
+Compiling your contracts...
+===========================
+> Everything is up to date, there is nothing to compile.
+
+
+
+Starting migrations...
+======================
+> Network name:    'mainnet'
+> Network id:      42220
+> Block gas limit: 0 (0x0)
+
+
+1_initial_migration.js
+======================
+
+   Replacing 'Migrations'
+   ----------------------
+   > transaction hash:    0xc5a8162fb208ff8dd97820ff4e105169cc5b162ecaa88bccae3aa1dd4af03bac
+   > Blocks: 1            Seconds: 4
+   > contract address:    0x8Fe8EF8400e41bdb004ad02139522Da68219fBDC
+   > block number:        11350542
+   > block timestamp:     1644331316
+   > account:             0x31984aE8F14afC0658bdEEB00Cc97fe38982539c
+   > balance:             4.98992479811083759
+   > gas used:            153118 (0x2561e)
+   > gas price:           0.5 gwei
+   > value sent:          0 ETH
+   > total cost:          0.000076559 ETH
+
+Migrations address 0x8Fe8EF8400e41bdb004ad02139522Da68219fBDC
+
+   Replacing 'ABDKMath64x64'
+   -------------------------
+   > transaction hash:    0xeb6df2e7d090c6709ea236a2fc1af169e75662aeeac98196ed817dfe6b4845ef
+   > Blocks: 1            Seconds: 4
+   > contract address:    0xA198096f1A4A9397a5084414Ca9913F49A6a95E3
+   > block number:        11350544
+   > block timestamp:     1644331326
+   > account:             0x31984aE8F14afC0658bdEEB00Cc97fe38982539c
+   > balance:             4.98988868961083759
+   > gas used:            72217 (0x11a19)
+   > gas price:           0.5 gwei
+   > value sent:          0 ETH
+   > total cost:          0.0000361085 ETH
+
+
+   Replacing 'Wallet'
+   ------------------
+   > transaction hash:    0x044ae54aeb8e0dcfaffb49d0f7e23883476e9880a9f3b1038d546865b722c779
+   > Blocks: 1            Seconds: 4
+   > contract address:    0x7162c4651b77A7B261674f2F5B30d6053C2B6223
+   > block number:        11350546
+   > block timestamp:     1644331336
+   > account:             0x31984aE8F14afC0658bdEEB00Cc97fe38982539c
+   > balance:             4.98944946011083759
+   > gas used:            878459 (0xd677b)
+   > gas price:           0.5 gwei
+   > value sent:          0 ETH
+   > total cost:          0.0004392295 ETH
+
+
+   Replacing 'Token'
+   -----------------
+   > transaction hash:    0x8fb9182b208c193466a5882d23450190dcc56eeead3f411020f15f4239632c50
+   > Blocks: 0            Seconds: 4
+   > contract address:    0x88Ab2daF8ead7e71CaDd9323ae688C207f9D943B
+   > block number:        11350548
+   > block timestamp:     1644331346
+   > account:             0x31984aE8F14afC0658bdEEB00Cc97fe38982539c
+   > balance:             4.98855485161083759
+   > gas used:            1789217 (0x1b4d21)
+   > gas price:           0.5 gwei
+   > value sent:          0 ETH
+   > total cost:          0.0008946085 ETH
+
+
+   Replacing 'WalletFactory'
+   -------------------------
+   > transaction hash:    0x59b5a2c2031286e0fee06ed0481ebbb45c44dbed092cf28ec070cba29670cf88
+   > Blocks: 1            Seconds: 4
+   > contract address:    0x7dbEF8F6bddd50bF35AD4B41b9eAEbff572eaF87
+   > block number:        11350550
+   > block timestamp:     1644331356
+   > account:             0x31984aE8F14afC0658bdEEB00Cc97fe38982539c
+   > balance:             4.98766417061083759
+   > gas used:            1781362 (0x1b2e72)
+   > gas price:           0.5 gwei
+   > value sent:          0 ETH
+   > total cost:          0.000890681 ETH
+
+
+   Replacing 'Controller'
+   ----------------------
+   > transaction hash:    0x7f4ad32e587a27b2f29585c8e2103a8349824c8870dd180f76168311851fa093
+   > Blocks: 1            Seconds: 4
+   > contract address:    0xa444da1f6eF511ce00E7Adc7D3963Eeafa79a33a
+   > block number:        11350552
+   > block timestamp:     1644331366
+   > account:             0x31984aE8F14afC0658bdEEB00Cc97fe38982539c
+   > balance:             4.98536489661083759
+   > gas used:            4598548 (0x462b14)
+   > gas price:           0.5 gwei
+   > value sent:          0 ETH
+   > total cost:          0.002299274 ETH
+
+Dumping roles and ownership informations!
+
+Deployer: 0x31984aE8F14afC0658bdEEB00Cc97fe38982539c
+Initial Owner: 0x31984aE8F14afC0658bdEEB00Cc97fe38982539c
+
+
+Token 0x88Ab2daF8ead7e71CaDd9323ae688C207f9D943B
+===========================
+Token is not ownable!
+Role Token MINTER_ROLE [ '0xa444da1f6eF511ce00E7Adc7D3963Eeafa79a33a' ]
+Role Token PAUSER_ROLE [ '0x31984aE8F14afC0658bdEEB00Cc97fe38982539c' ]
+Role Token ADMIN_ROLE []
+Role Token OPERATOR_ROLE []
+Role Token CONTROLLER_ROLE []
+Role Token DEFAULT_ADMIN_ROLE [ '0x31984aE8F14afC0658bdEEB00Cc97fe38982539c' ]
+===========================
+
+
+Controller 0xa444da1f6eF511ce00E7Adc7D3963Eeafa79a33a
+===========================
+Controller Owner: 0x31984aE8F14afC0658bdEEB00Cc97fe38982539c
+Role Controller MINTER_ROLE []
+Role Controller PAUSER_ROLE []
+Role Controller ADMIN_ROLE [ '0x31984aE8F14afC0658bdEEB00Cc97fe38982539c' ]
+Role Controller OPERATOR_ROLE [ '0x31984aE8F14afC0658bdEEB00Cc97fe38982539c' ]
+Role Controller CONTROLLER_ROLE []
+Role Controller DEFAULT_ADMIN_ROLE [ '0x31984aE8F14afC0658bdEEB00Cc97fe38982539c' ]
+===========================
+
+
+Wallet 0x7162c4651b77A7B261674f2F5B30d6053C2B6223
+===========================
+Wallet is not ownable!
+Wallet has no roles specified!
+===========================
+
+
+WalletFactory 0x7dbEF8F6bddd50bF35AD4B41b9eAEbff572eaF87
+===========================
+WalletFactory Owner: 0xa444da1f6eF511ce00E7Adc7D3963Eeafa79a33a
+WalletFactory has no roles specified!
+===========================
+
+
+
+   > Saving migration to chain.
+   > Saving artifacts
+   -------------------------------------
+   > Total cost:        0.0046364605 ETH
+
+
+Summary
+=======
+> Total deployments:   6
+> Final cost:          0.0046364605 ETH
